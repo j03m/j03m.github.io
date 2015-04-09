@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <script src="jquery.js" type="text/javascript"></script>
+    <script src="underscore.js" type="text/javascript"></script>
+    <script src="backbone.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+
+        var Post = Backbone.Model.extend({
+            initialize:function(){
+                this.isaPost = true;
+            },
+            parse:function(data){
+                return data;
+            }
+        });
+
+        var PaginatedCollection = Backbone.Collection.extend({
+            model:Post,
+            initialize: function(pages) {
+                _.bindAll(this, 'parse', 'url', 'more');
+                this.page = 1;
+                this.pages = pages;
+            },
+            fetch: function(options) {
+                typeof(options) != 'undefined' || (options = {});
+                this.trigger("fetching");
+                var self = this;
+                var success = options.success;
+                options.success = function(resp) {
+                    self.trigger("fetched");
+                    if(success) { success(self, resp); }
+                };
+                return Backbone.Collection.prototype.fetch.call(this, options);
+            },
+            parse: function(resp) {
+                console.log("parse?");
+                return resp; //array of models
+            },
+            url: function() {
+                return "page." + this.page + ".json";
+            },
+            more: function() {
+                this.page = this.page + 1;
+                return this.fetch();
+            }
+
+        });
+
+    var pc = new PaginatedCollection(10);
+    pc.on('fetching', function(){
+        console.log("Fetching...");
+    });
+
+    pc.on('fetched', function(){
+        console.log("Fetched...");
+    });
+
+    pc.fetch({
+        success:function(data){
+            console.log("data:", data);
+        }
+    });
+
+    </script>
+    <title></title>
+</head>
+<body>
+
+</body>
+</html>

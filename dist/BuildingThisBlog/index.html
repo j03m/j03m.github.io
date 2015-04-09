@@ -1,0 +1,296 @@
+<h1 id="publishing-a-backbone-browserify-and-reactjs-powered-blog-to-github-io-with-gulp">Publishing a Backbone, Browserify and ReactJs Powered Blog to Github.io with Gulp</h1>
+<p>I immediately dug the idea of the github.io powered blog. As a publishing system,
+I was initially wooed by Jekyll. About a quarter of the way into the instructions
+though, I found myself saying, &quot;I want to do this from gulp, and I want to just
+own the whole publishing chain and I want to control the UI.&quot; I probably could
+have forked Jekyll, but well, there was ruby and I didn&#39;t want that. The result
+is an interesting take on publishing done with only the same javascript tools. I would use to do my development.</p>
+<p>The first thing I knew is I wanted to write in my editor of choice using
+Markdown because, well, Markdown is fast, fluent, easy and we all know it well
+from creating github README.mds. I had no interest in web based editors. There
+was nothing they really offered I couldn&#39;t do with markdown and markdown in my
+mind was just easier to write.</p>
+<p>I also wanted the site to be pretty and have some neat features that I could
+code myself. This would also (in theory) allow me to build the scaffolding of
+the site to taste, force me to brush up my CSS skills and generally let me have
+a place to drop new client side web tech without much overhead.</p>
+<p>I also didn&#39;t want to host a backend and I want to push and revise content in git.
+Obviously github.io is the perfect fit, but I wanted to build up a scaffolding
+that let me publish as easily as deploying code. I also wanted to be able to
+save drafts and review them locally before pushing.</p>
+<p>The result, a basic post reading website built with React, Backbone, Browserify and gulp. The gulp file has been extended
+also take into account publishing posts from raw MD files and building a index files to serve as a sort fake backend that
+serves a scrolling list of posts.</p>
+<h2 id="usage">Usage</h2>
+<p>Using the blog is pretty straight forward. Basically a session goes like this:</p>
+<ul>
+<li>Start &quot;gulp&quot;</li>
+<li>Open a browser localhost:8000 (all configuration are in package.json)</li>
+<li>Write markdown files in the &quot;raws&quot; folder.</li>
+<li>Edit src to change styles, app logic, add functionality</li>
+<li>Gulp will automatically publish the changes and you can see them via live reload on your local site</li>
+<li>When everything is done and ready, do a gulp publish which will publish all of your content and update the indexes that handle post loading</li>
+<li>Push to github.io and enjoy the fruits of your labor</li>
+</ul>
+<h2 id="development">Development</h2>
+<p>As mentioned in the title the blog itself uses Backbone + React. Someone asking why is probably valid so I&#39;ll address that first. Backbone basically let me set up some very simple models, routes and controllers and React provided me with an elegant solution for views. It really wasn&#39;t a lot of code to get them working together in collaborative manner and as we&#39;ll see I didn&#39;t need any special middleware or plugins.</p>
+<p>I used Browserify because I love the simplicity it provides in allowing me to write nodejs style code. In addition, Browserify lets me easily test the javascript modules I write outside of the browser in Mocha, my test runner of choice. As a matter of practice, I tend to write code that accepts dependencies through the constructor so it is very trivial to write cross platform code and mocking tests by always making sure to  take platform or role specific bits of code via the constructor. We&#39;ll see more on that below.</p>
+<h2 id="views">Views</h2>
+<p>Here is the code from the main content of the site. It&#39;s a fairly straight forward React class powered via JSX:</p>
+<pre><code><div class="highlight"><pre><span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">React</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;react&quot;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">PostList</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;./post-list-view.js&quot;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">RightAside</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;./right-aside.js&quot;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">LeftAside</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;./left-aside.js&quot;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">Content</span> <span class="o">=</span> <span class="nx">React</span><span class="p">.</span><span class="nx">createClass</span><span class="p">({</span>
+    <span class="nx">render</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">className</span><span class="o">=</span><span class="s2">&quot;content&quot;</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="nx">PostList</span> <span class="nx">content</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">content</span><span class="p">}</span><span class="o">/&gt;</span>
+            <span class="o">&lt;</span><span class="nx">LeftAside</span><span class="o">/&gt;</span>
+            <span class="o">&lt;</span><span class="nx">RightAside</span><span class="o">/&gt;</span>
+            <span class="o">&lt;</span><span class="err">/div&gt;</span>
+        <span class="p">);</span>
+    <span class="p">},</span>
+    <span class="nx">componentDidUpdate</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">scrollPosition</span><span class="p">){</span>
+            <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">global</span><span class="p">.</span><span class="nx">scrollTo</span> <span class="o">===</span> <span class="s2">&quot;function&quot;</span><span class="p">){</span>
+                <span class="nx">global</span><span class="p">.</span><span class="nx">scrollTo</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">scrollPosition</span><span class="p">.</span><span class="nx">x</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">scrollPosition</span><span class="p">.</span><span class="nx">y</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">Content</span><span class="p">;</span>
+</pre></div>
+
+</code></pre><p>The post list component houses the main scrolling list of posts. We can see that like any good react app (or any good app in general) the view is completely uncoupled from any knowledge of what is providing data. In a moment, we&#39;ll see this class is going to be fed from Backbone, but it has no knowledge of Backbone what so ever. If we want to swap out Backbone later, we can.</p>
+<pre><code class="lang-javascript"><div class="highlight"><pre><span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">React</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;react&quot;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">PostSummary</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;./post-summary-view&quot;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">PostFull</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;./post-full-view&quot;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">PostList</span> <span class="o">=</span> <span class="nx">React</span><span class="p">.</span><span class="nx">createClass</span><span class="p">({</span>
+    <span class="nx">getInitialState</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
+        <span class="k">return</span> <span class="p">{</span><span class="nx">showPost</span><span class="o">:</span> <span class="kc">false</span><span class="p">};</span>
+    <span class="p">},</span>
+    <span class="nx">render</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
+        <span class="kd">var</span> <span class="nx">posts</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">content</span><span class="p">.</span><span class="nx">isPost</span><span class="p">){</span>
+            <span class="nx">posts</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">content</span><span class="p">.</span><span class="nx">models</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">item</span><span class="p">){</span>
+                <span class="k">return</span> <span class="o">&lt;</span><span class="nx">PostSummary</span> <span class="nx">postdata</span><span class="o">=</span><span class="p">{</span><span class="nx">item</span><span class="p">.</span><span class="nx">attributes</span><span class="p">}</span> <span class="o">/&gt;</span><span class="p">;</span>
+            <span class="p">});</span>
+        <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+            <span class="k">return</span> <span class="o">&lt;</span><span class="nx">PostFull</span> <span class="nx">postdata</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">content</span><span class="p">.</span><span class="nx">post</span><span class="p">}</span> <span class="o">/&gt;</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">className</span><span class="o">=</span><span class="s2">&quot;post-list&quot;</span><span class="o">&gt;</span>
+                <span class="p">{</span><span class="nx">posts</span><span class="p">}</span>
+            <span class="o">&lt;</span><span class="err">/div&gt;</span>
+        <span class="p">);</span>
+    <span class="p">},</span>
+    <span class="nx">closePost</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
+        <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">getInitialState</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">PostList</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="models">Models</h2>
+<p>Our models are powered by Backbone. Backbone allowed me to easily grab the static Json files that are generated by gulp publish and page through them as if they were a RESTful API. This required minimal code:</p>
+<pre><code class="lang-javascript"><div class="highlight"><pre><span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">Backbone</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;backbone&quot;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">PostModel</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;./post-model&quot;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">_</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;lodash&quot;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">PostListCollection</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Collection</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+    <span class="nx">model</span><span class="o">:</span> <span class="nx">PostModel</span><span class="p">,</span>
+    <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">pages</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">_</span><span class="p">.</span><span class="nx">bindAll</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s2">&quot;parse&quot;</span><span class="p">,</span> <span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="s2">&quot;more&quot;</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">page</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">nextPage</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">pages</span> <span class="o">=</span> <span class="nx">pages</span><span class="p">;</span>
+    <span class="p">},</span>
+    <span class="nx">fetch</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">options</span> <span class="o">=</span> <span class="k">typeof</span> <span class="nx">options</span> <span class="o">!==</span> <span class="s2">&quot;undefined&quot;</span> <span class="o">?</span> <span class="nx">options</span> <span class="o">:</span> <span class="p">{};</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s2">&quot;fetching&quot;</span><span class="p">);</span>
+        <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">success</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">success</span><span class="p">;</span>
+        <span class="nx">options</span><span class="p">.</span><span class="nx">remove</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+        <span class="nx">options</span><span class="p">.</span><span class="nx">add</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+        <span class="nx">options</span><span class="p">.</span><span class="nx">success</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">resp</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">self</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s2">&quot;fetched&quot;</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">page</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">nextPage</span><span class="p">;</span>
+            <span class="k">if</span><span class="p">(</span><span class="nx">success</span><span class="p">)</span> <span class="p">{</span> <span class="nx">success</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">resp</span><span class="p">);</span> <span class="p">}</span>
+        <span class="p">}.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Collection</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">fetch</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+    <span class="p">},</span>
+    <span class="nx">parse</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">resp</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">resp</span><span class="p">;</span> <span class="c1">//array of models</span>
+    <span class="p">},</span>
+    <span class="nx">url</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s2">&quot;page.&quot;</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">nextPage</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span><span class="p">;</span>
+    <span class="p">},</span>
+    <span class="nx">more</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">nextPage</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">page</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">fetch</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">PostListCollection</span><span class="p">;</span>
+</pre></div>
+
+</code></pre>
+<h2 id="routes">Routes</h2>
+<p>I also took advantage of Backbone&#39;s routes which are still my favorite way to control the over all flow of an application. I realize there were react focused solutions like React Router, but I really wanted to maintain the ability to choose &quot;the right&quot; tech for the right job and not use React focused tech for the sake of using React. Backbone is really great at Models + Routes, so it was logical to use it for this part of the application.</p>
+<pre><code class="lang-javascript"><div class="highlight"><pre><span class="c1">////set up the Backbone router</span>
+<span class="kd">var</span> <span class="nx">Router</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Router</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+    <span class="nx">routes</span><span class="o">:</span> <span class="p">{</span>
+        <span class="s2">&quot;post/:title&quot;</span><span class="o">:</span> <span class="s2">&quot;showPost&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;*action&quot;</span><span class="o">:</span> <span class="s2">&quot;defaultRoute&quot;</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="kd">var</span> <span class="nx">appRouter</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Router</span><span class="p">();</span>
+
+<span class="nx">appRouter</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;route:defaultRoute&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">postListController</span><span class="p">.</span><span class="nx">fetched</span><span class="p">){</span>
+        <span class="nx">postListController</span><span class="p">.</span><span class="nx">showList</span><span class="p">();</span>
+    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+        <span class="nx">postListController</span><span class="p">.</span><span class="nx">fetch</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+            <span class="nx">postListController</span><span class="p">.</span><span class="nx">showList</span><span class="p">();</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+
+<span class="p">});</span>
+
+<span class="nx">appRouter</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;route:showPost&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">post</span><span class="p">){</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">postListController</span><span class="p">.</span><span class="nx">fetched</span><span class="p">){</span>
+        <span class="kd">var</span> <span class="nx">lastScroll</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">x</span><span class="o">:</span> <span class="nx">global</span><span class="p">.</span><span class="nx">scrollX</span><span class="p">,</span> <span class="nx">y</span><span class="o">:</span> <span class="nx">global</span><span class="p">.</span><span class="nx">scrollY</span><span class="p">};</span>
+        <span class="nx">postListController</span><span class="p">.</span><span class="nx">showPost</span><span class="p">(</span><span class="nx">post</span><span class="p">,</span> <span class="nx">lastScroll</span><span class="p">);</span>
+    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+        <span class="nx">postListController</span><span class="p">.</span><span class="nx">fetch</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+            <span class="nx">postListController</span><span class="p">.</span><span class="nx">showPost</span><span class="p">(</span><span class="nx">post</span><span class="p">);</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<h2 id="controllers">Controllers</h2>
+<p>As we saw in the routes code, I also wrote some controllers which have two roles. First they are glue between our models + views. Secondly they are the middle layer that builds the composition of the application.</p>
+<pre><code><div class="highlight"><pre><span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">_</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;lodash&quot;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">$</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;jquery&quot;</span><span class="p">);</span>
+<span class="kd">function</span> <span class="nx">PostListController</span><span class="p">(</span><span class="nx">collection</span><span class="p">,</span> <span class="nx">renderer</span><span class="p">){</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">collection</span> <span class="o">=</span> <span class="nx">collection</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">collection</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;fetched&quot;</span><span class="p">,</span>
+        <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">fetched</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+    <span class="p">}.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">renderer</span> <span class="o">=</span> <span class="nx">renderer</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">PostListController</span><span class="p">.</span><span class="nx">Modes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">ShowPostMode</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nx">ShowListMode</span><span class="o">:</span> <span class="mi">2</span>
+<span class="p">};</span>
+
+<span class="nb">Object</span><span class="p">.</span><span class="nx">freeze</span><span class="p">(</span><span class="nx">PostListController</span><span class="p">.</span><span class="nx">Modes</span><span class="p">);</span>
+
+<span class="nx">PostListController</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">fetch</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">collection</span><span class="p">.</span><span class="nx">fetch</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="nx">PostListController</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">showList</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">mode</span> <span class="o">=</span> <span class="nx">PostListController</span><span class="p">.</span><span class="nx">Modes</span><span class="p">.</span><span class="nx">ShowListMode</span><span class="p">;</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">renderer</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">collection</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">lastScroll</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="nx">PostListController</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">showPost</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">lastScroll</span><span class="p">){</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">lastScroll</span> <span class="o">=</span> <span class="nx">lastScroll</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">mode</span> <span class="o">=</span> <span class="nx">PostListController</span><span class="p">.</span><span class="nx">Modes</span><span class="p">.</span><span class="nx">ShowPostMode</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">stuff</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">pluck</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">collection</span><span class="p">.</span><span class="nx">models</span><span class="p">,</span> <span class="s2">&quot;attributes&quot;</span><span class="p">);</span>
+    <span class="kd">var</span> <span class="nx">post</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">stuff</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">item</span><span class="p">.</span><span class="nx">title</span> <span class="o">===</span> <span class="nx">title</span><span class="p">;</span>
+    <span class="p">});</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">post</span><span class="p">.</span><span class="nx">html</span> <span class="o">===</span> <span class="kc">undefined</span><span class="p">){</span>
+        <span class="c1">//fetch html for this post</span>
+        <span class="nx">$</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">post</span><span class="p">.</span><span class="nx">file</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
+            <span class="nx">post</span><span class="p">.</span><span class="nx">html</span> <span class="o">=</span> <span class="nx">data</span><span class="p">;</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">renderer</span><span class="p">.</span><span class="nx">render</span><span class="p">({</span><span class="nx">isPost</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">post</span><span class="o">:</span> <span class="nx">post</span><span class="p">});</span>
+        <span class="p">}.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">renderer</span><span class="p">.</span><span class="nx">render</span><span class="p">({</span><span class="nx">isPost</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">post</span><span class="o">:</span> <span class="nx">post</span><span class="p">});</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">post</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="nx">PostListController</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">more</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">collection</span><span class="p">.</span><span class="nx">more</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">PostListController</span><span class="p">;</span>
+</pre></div>
+
+</code></pre><p>As you can see the controller accepts it&#39;s Backbone model (collection) and it&#39;s view (renderer) via the constructor. By accepting our dependencies via the constuctor, we get easy framework-free dependency injection that can be leveraged to let us test all of this code
+via Mocha, outside the browser.</p>
+<p>For example, in our entry point, we compose everything together:</p>
+<pre><code class="lang-javascript"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">postListCollection</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PostListCollection</span><span class="p">();</span>
+<span class="kd">var</span> <span class="nx">reactRenderer</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ReactRenderer</span><span class="p">();</span>
+<span class="kd">var</span> <span class="nx">postListController</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PostListController</span><span class="p">(</span><span class="nx">postListCollection</span><span class="p">,</span> <span class="nx">reactRenderer</span><span class="p">);</span>
+</pre></div>
+
+</code></pre>
+<p>This composition and injection allows us to do some neat stuff while testing. For example writing
+headless unit tests with a simple mock of the renderer:</p>
+<pre><code><div class="highlight"><pre><span class="kd">var</span> <span class="nx">MockRenderer</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">didRender</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">MockRenderer</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">render</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">didRender</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">renderData</span> <span class="o">=</span> <span class="nx">data</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">MockRenderer</span><span class="p">;</span>
+</pre></div>
+
+</code></pre><p>Becomes very trivial with code like:</p>
+<pre><code><div class="highlight"><pre><span class="nx">it</span><span class="p">(</span><span class="s2">&quot;should have a collection with models and trigger a render&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">done</span><span class="p">){</span>
+        <span class="kd">var</span> <span class="nx">postListCollection</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PostListCollection</span><span class="p">();</span>
+        <span class="kd">var</span> <span class="nx">pm</span> <span class="o">=</span> <span class="nx">pageMock</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">postListCollection</span><span class="p">);</span>
+        <span class="kd">var</span> <span class="nx">renderer</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Renderer</span><span class="p">();</span>
+        <span class="kd">var</span> <span class="nx">postListController</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PostListController</span><span class="p">(</span><span class="nx">postListCollection</span><span class="p">,</span> <span class="nx">renderer</span><span class="p">);</span>
+        <span class="nx">Backbone</span><span class="p">.</span><span class="nx">ajax</span> <span class="o">=</span> <span class="nx">backBoneMock</span><span class="p">.</span><span class="nx">mockAjaxFulfillFn</span><span class="p">(</span><span class="nx">pm</span><span class="p">);</span>
+        <span class="kd">var</span> <span class="nx">p</span> <span class="o">=</span> <span class="nx">postListController</span><span class="p">.</span><span class="nx">fetch</span><span class="p">();</span>
+        <span class="nx">p</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+            <span class="c1">//validate the model</span>
+            <span class="nx">assert</span><span class="p">(</span><span class="nx">postListController</span><span class="p">.</span><span class="nx">collection</span><span class="p">.</span><span class="nx">models</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">2</span><span class="p">);</span>
+            <span class="nx">postListController</span><span class="p">.</span><span class="nx">showList</span><span class="p">();</span>
+            <span class="nx">assert</span><span class="p">(</span><span class="nx">renderer</span><span class="p">.</span><span class="nx">didRender</span><span class="p">);</span>
+            <span class="nx">assert</span><span class="p">(</span><span class="nx">renderer</span><span class="p">.</span><span class="nx">renderData</span> <span class="o">===</span> <span class="nx">postListController</span><span class="p">.</span><span class="nx">collection</span><span class="p">);</span>
+            <span class="nx">done</span><span class="p">();</span>
+        <span class="p">});</span>
+    <span class="p">});</span>
+</pre></div>
+
+</code></pre><p>Backbone can also be tricky pain to write non-browser unit tests for. However, because of the way Backbone is written it&#39;s pretty trivial to override the functions that physically dependon on aspects of the browser. I wrote some basic mock classes to deliver
+data I wanted and monkey patched them into Backbone&#39;s ajax function:</p>
+<pre><code><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">mockAjaxFulfillFn</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">fn</span><span class="p">){</span>
+    <span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">,</span><span class="nx">r</span><span class="p">){</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">success</span><span class="p">){</span>
+                <span class="nx">options</span><span class="p">.</span><span class="nx">success</span><span class="p">(</span><span class="nx">fn</span><span class="p">());</span>
+            <span class="p">}</span>
+            <span class="nx">f</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
+        <span class="p">});</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre><p>Here we fulfill a promise and access data provided from the test via closure at fulfillment time.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In conclusion I feel like this was a great little exercise. For one, the publishing aspect of the gulp file was great way to break out of the way I normally use gulp and write some tasks that weren&#39;t standard fair.</p>
+<p>In addition, I was able to prove to myself that avoiding &quot;all in one&quot;, &quot;big framework&quot; mentality by piecing together well written portions of other frameworks was pretty straight forward.</p>

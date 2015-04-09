@@ -1,0 +1,7 @@
+{
+  "id":1,
+  "file": "BuildingThisBlog/index.html",
+  "date": 1432169666207,
+  "title": "THIS BLOG WROTE ITSELF!",
+  "summary": "Well, no it didn't. But this blog for all intents an purposes created by the\ntools it aims to describe and serves as an outline as to how a server-less blog\ncan be created using github.io for hosting, nodejs and gulp."
+}
