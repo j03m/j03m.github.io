@@ -270,7 +270,89 @@ npm install gulp --save-dev
 ```
 
 Next, we'll create a basic gulp file watch and watch our "raws" directory which
-will contain raw mds.
+will contain raw mds. We'll also watch lib and test and cause modifications
+there to trigger mocha. For this we'll use gulp.watch and gulp-mocha.
+
+```
+npm install gulp-mocha --save-dev
+```
+
+Our initial skeleton GulpFile.js looks like:
+
+```javascript
+var gulp = require('gulp');
+var watch = require('gulp-watch');
+var batch = require('gulp-batch');
+var mocha = require('gulp-mocha');
+
+gulp.task('test', function () {
+    console.log('Testing!');
+});
+
+gulp.task('build_content', function () {
+    console.log('Building!');
+});
+
+gulp.task('default', function () {
+    watch('lib/**/*.js', batch(function () {
+        gulp.start('test');
+    }));
+
+    watch('tests/**/*.js', batch(function () {
+        gulp.start('test');
+    }));
+
+    watch('raws/**/*.md', batch(function () {
+        gulp.start('build_content');
+    }));
+});
+```
+
+We can edit raws and lib to verify we see the correct console output. But,
+we need some real code in there to do some real stuff. Wiring tests is easy, so
+lets do that first.
+
+```javascript
+var gulp = require('gulp');
+var mocha = require('gulp-mocha');
+
+gulp.task('test', function () {
+    return gulp.src('tests/**/*.js', {read: false})
+        .pipe(mocha({reporter: 'nyan'}));
+});
+
+gulp.task('build_content', function () {
+    console.log('Working!');
+});
+
+gulp.task('default', function () {
+    watch('lib/**/*.js', batch(function () {
+        gulp.start('test');
+    }));
+
+    watch('tests/**/*.js', batch(function () {
+        gulp.start('test');
+    }));
+
+    watch('raws/**/*.md', batch(function () {
+        gulp.start('build_content');
+    }));
+});
+
+For building content, we'll need another target command that will leverage
+md2post.js. Streams hurt my head and I find them opaque but I suppose there is
+no arguing the hard performance benefits. To get around my personal brain power
+limitations I'm going to use through2 which allows me think in terms of
+functional blocks but still get the benefit of streaming.
+
+
+
+```
+npm install through2 --save-dev
+```
+
+From here, I'll wire up a stream/function that will build our posts from
+
 
 
 
