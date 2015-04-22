@@ -1,3 +1,9 @@
+# THIS BLOG WROTE ITSELF!
+
+Well, no it didn't. But this blog for all intents an purposes created by the
+tools it aims to describe and serves as an outline as to how a server-less blog
+can be created using github.io for hosting, nodejs and gulp.
+
 I immediately dug the instantness of github.io. Being pretty bare bones though
 I was initially woed by Jekyll. About a quarter of the way into the instructions
 though, I found myself saying. You know what - you've done so little web stuff
@@ -5,7 +11,9 @@ in recent days. Why don't you take a moment and build it out yourself?
 
 The first thing I knew is I wanted to write in my editor of choice using
 Markdown because, well, Markdown is fast, fluent, easy and we all know it well
-from creating github README.mds.
+from creating github README.mds. I had no interest in web based editors. I tried
+Medium and couldn't figure out a way to format a code snippet that could compete
+with Github's very simple &#96&#96&#96javascript.
 
 I also wanted the site to be pretty and have some neat features that I could
 code myself. This would also (in theory) allow me to build the scaffolding of
@@ -13,20 +21,19 @@ the site to taste, force me to brush up my CSS skills and generally let me have
 a place to drop new client side web tech without much overhead. (I'm sure at
 some point I'll need a server, but we'll see).
 
-I don't want to host a backend and I want to push and revise content in git.
+I also didn't want to host a backend and I want to push and revise content in git.
 Obviously github.io is the perfect fit, but I wanted to build up a scaffolding
 that let me publish as easily as deploying code. I also wanted to be able to
 save drafts and review them locally before pushing.
 
-So the first post in this blog is how I built this blog. One of my favorite
-blog of all time both for content, layout and style is www.substack.net (which
-is also gitpowered, but I still want to write my own), so I'll pattern off off
-that for general usability. (Imitation is the the most sincere form of flattery?)
-We'll have a scrolling lists of posts and click through to view the full post.
+The plan seemed simple: Create a set of gulp scripts that converted md files to blog posts.
+Host the blog locally so I could see live updates and use git to manage version. What could go wrong?
 
-Last but not least, it was my intention to get a first version of this done in
-under and hour while on the train to work, so simplicity and time was of
-primary importance.
+So the first post in this blog is how I built this blog. One of my favorite
+blog of all time both for content, layout and style is [www.substack.net](www.substack.net)
+(which is also gitpowered, but I still want to write my own), so I'll pattern off of
+that for general usability and coolness. (Imitation is the the most sincere form of flattery?)
+We'll have a scrolling lists of posts and click through to view the full post.
 
 So off to the races.
 
@@ -309,35 +316,9 @@ gulp.task('default', function () {
 ```
 
 We can edit raws and lib to verify we see the correct console output. But,
-we need some real code in there to do some real stuff. Wiring tests is easy, so
-lets do that first.
-
-```javascript
-var gulp = require('gulp');
-var mocha = require('gulp-mocha');
-
-gulp.task('test', function () {
-    return gulp.src('tests/**/*.js', {read: false})
-        .pipe(mocha({reporter: 'nyan'}));
-});
-
-gulp.task('build_content', function () {
-    console.log('Working!');
-});
-
-gulp.task('default', function () {
-    watch('lib/**/*.js', batch(function () {
-        gulp.start('test');
-    }));
-
-    watch('tests/**/*.js', batch(function () {
-        gulp.start('test');
-    }));
-
-    watch('raws/**/*.md', batch(function () {
-        gulp.start('build_content');
-    }));
-});
+we need some real code in there to do some real stuff. Wiring tests is easy well
+use the gulp-mocha plugin and use gulp.watch to trigger it off of changes to
+our lib or tests directory.
 
 For building content, we'll need another target command that will leverage
 md2post.js. Streams hurt my head and I find them opaque but I suppose there is
@@ -345,13 +326,134 @@ no arguing the hard performance benefits. To get around my personal brain power
 limitations I'm going to use through2 which allows me think in terms of
 functional blocks but still get the benefit of streaming.
 
+Here, we'll create a function called processMdFiles that will get passed to
+through2 and used in our "build_content" task. The function cheats a bit,
+operates converts the buffer from our vinyl file to a string, transforms and
+then rebuffers it. As a later project we'll see if we can get marked working
+with streams. I suppose we should have looked or written a gulp-marked plugin,
+but this will suffice for now.
 
+Our final gulp file looks like:
+
+
+```javascript
+var gulp = require('gulp');
+var mocha = require('gulp-mocha');
+var tap = require('gulp-tap');
+var rename = require('gulp-rename');
+var through2 = require('through2');
+var md2post = require('./lib/md2post.js');
+var path = require('path');
+
+
+gulp.task('test', function () {
+    return gulp.src('tests/**/*.js', {read: false})
+        .pipe(mocha({reporter: 'nyan'}));
+});
+
+gulp.task('build_content', function () {
+    return gulp.src('raws/**/*.md')
+        // tap into the stream to get each file's data
+        .pipe(through2.obj(processMdFiles))
+        .pipe(gulp.dest("./dist"))
+});
+
+
+gulp.task('default', function () {
+    gulp.watch('lib/**/*.js',['test']);
+    gulp.watch('tests/**/*.js', ['test']);
+    gulp.watch('raws/**/*.md', ['build_content']);
+});
+
+function processMdFiles(chunk, enc, cb){
+    var promise = md2post(chunk.contents.toString());
+    promise.then(function(result){
+        var filePath = chunk.path;
+        chunk.contents = new Buffer(result, "utf-8");
+        this.push(chunk);
+        cb();
+    }.bind(this));
+
+}
+```
+Now, as I save this blog post, an equivalent file is written to ./dist but is
+formatted with html. This is cool, but I don't want
+to write to ./dist/filename.md. I actually want to take the post name, create a directory
+and then inside place an index.html file. After that I'll need to start thinking
+about the main index and what our blog template will look like.
+
+Gulp-rename passed a function lets us do the path swap pretty easily. Our
+build_content task turns into:
 
 ```
-npm install through2 --save-dev
+gulp.task('build_content', function () {
+    return gulp.src('raws/**/*.md')
+        // tap into the stream to get each file's data
+        .pipe(through2.obj(processMdFiles))
+        .pipe(rename(newPath))
+        .pipe(gulp.dest("./dist"))
+});
+
+With this function handling the rename details:
+
+```
+function newPath(pathObj) {
+    pathObj.dirname = path.join(pathObj.dirname, pathObj.basename)
+    pathObj.basename = "index";
+    pathObj.extname = ".html";
+}
 ```
 
-From here, I'll wire up a stream/function that will build our posts from
+Next up I needed to figure out what I wanted to do about an index. I didn't know
+much about SEO or blogging in general, but I knew I needed some way for posts to
+get ingested. I also knew I wanted to easily be able to submit a post to twitter,
+fb, hacker news and the like. I also wanted a pretty single page app experience.
+How would I go about getting both? I needed to look at a real world example to
+make sure I was going about this the right way.
+
+After some thought I decided I would organize posts into numeric txt files in groups of
+10. I'd have a main template which would get updated with the "latest" group of 10. But
+as you scrolled it would grab the next group of 10 and their associated snippets.
+
+Things just got more complex. Before I started automating all of this with gulp, I really
+needed to lock down some client code to make sure it was in fact what I wanted. At this point,
+my knee jerk reaction said - hey this is a great time to checkout react. And so I did.
+
+## Taking some time to think about the experience with ReactJS.
+
+Everything in React is components. Which I like. So now let's take a moment to think through
+what components this blog will have. My initial thoughts looked like this:
+
+* Main Scroll List of Posts - displays N post summaries at a time and lets us scroll through and load more on scroll end
+* Post Summary Card
+** Title
+** Snippet
+* Full Post View (this should be a single page)
+** Title
+** Body
+* Tweets side bar
+** Tweet
+* Instapaper side bar
+** Headline
+
+That seems pretty easy. For Models, we'll likely use Backbone and potentially some Browserify
+because I like my js node-like. Quick shout out to (Tyler McGinnis)[http://tylermcginnis.com/] who wrote
+(this)[http://tylermcginnis.com/reactjs-tutorial-a-comprehensive-guide-to-building-apps-with-react/] very
+awesome tutorial on React which I used to accumulate my current (paltry) knowledge. Bear in mind I haven't
+done anything in the web front-end world in a while so bear with me.
+
+ 
+
+
+
+
+
+
+
+
+
+
+
 
 
 

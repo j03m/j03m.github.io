@@ -1,27 +1,32 @@
+<h1 id="this-blog-wrote-itself-">THIS BLOG WROTE ITSELF!</h1>
+<p>Well, no it didn&#39;t. But this blog for all intents an purposes created by the
+tools it aims to describe and serves as an outline as to how a server-less blog
+can be created using github.io for hosting, nodejs and gulp.</p>
 <p>I immediately dug the instantness of github.io. Being pretty bare bones though
 I was initially woed by Jekyll. About a quarter of the way into the instructions
 though, I found myself saying. You know what - you&#39;ve done so little web stuff
 in recent days. Why don&#39;t you take a moment and build it out yourself?</p>
 <p>The first thing I knew is I wanted to write in my editor of choice using
 Markdown because, well, Markdown is fast, fluent, easy and we all know it well
-from creating github README.mds.</p>
+from creating github README.mds. I had no interest in web based editors. I tried
+Medium and couldn&#39;t figure out a way to format a code snippet that could compete
+with Github&#39;s very simple &amp;#96&amp;#96&amp;#96javascript.</p>
 <p>I also wanted the site to be pretty and have some neat features that I could
 code myself. This would also (in theory) allow me to build the scaffolding of
 the site to taste, force me to brush up my CSS skills and generally let me have
 a place to drop new client side web tech without much overhead. (I&#39;m sure at
 some point I&#39;ll need a server, but we&#39;ll see).</p>
-<p>I don&#39;t want to host a backend and I want to push and revise content in git.
+<p>I also didn&#39;t want to host a backend and I want to push and revise content in git.
 Obviously github.io is the perfect fit, but I wanted to build up a scaffolding
 that let me publish as easily as deploying code. I also wanted to be able to
 save drafts and review them locally before pushing.</p>
+<p>The plan seemed simple: Create a set of gulp scripts that converted md files to blog posts.
+Host the blog locally so I could see live updates and use git to manage version. What could go wrong?</p>
 <p>So the first post in this blog is how I built this blog. One of my favorite
-blog of all time both for content, layout and style is www.substack.net (which
-is also gitpowered, but I still want to write my own), so I&#39;ll pattern off off
-that for general usability. (Imitation is the the most sincere form of flattery?)
+blog of all time both for content, layout and style is <a href="www.substack.net">www.substack.net</a>
+(which is also gitpowered, but I still want to write my own), so I&#39;ll pattern off of
+that for general usability and coolness. (Imitation is the the most sincere form of flattery?)
 We&#39;ll have a scrolling lists of posts and click through to view the full post.</p>
-<p>Last but not least, it was my intention to get a first version of this done in
-under and hour while on the train to work, so simplicity and time was of
-primary importance.</p>
 <p>So off to the races.</p>
 <p>First things first: <em>Easy markdown to html</em></p>
 <p>(<a href="https://github.com/chjj/marked)[chjj/marked">https://github.com/chjj/marked)[chjj/marked</a>] stood out here
@@ -315,6 +320,7 @@ but this will suffice for now.</p>
         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="s2">&quot;./dist&quot;</span><span class="p">))</span>
 <span class="p">});</span>
 
+
 <span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
     <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;lib/**/*.js&#39;</span><span class="p">,[</span><span class="s1">&#39;test&#39;</span><span class="p">]);</span>
     <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;tests/**/*.js&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;test&#39;</span><span class="p">]);</span>
@@ -335,7 +341,61 @@ but this will suffice for now.</p>
 
 </code></pre>
 <p>Now, as I save this blog post, an equivalent file is written to ./dist but is
-formatted with html. This is cool, but I also need to change this. I don&#39;t want
-to write to ./dist. I actually want to take the post name, create a directory
+formatted with html. This is cool, but I don&#39;t want
+to write to ./dist/filename.md. I actually want to take the post name, create a directory
 and then inside place an index.html file. After that I&#39;ll need to start thinking
 about the main index and what our blog template will look like.</p>
+<p>Gulp-rename passed a function lets us do the path swap pretty easily. Our
+build_content task turns into:</p>
+<pre><code><div class="highlight"><pre><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;build_content&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="s1">&#39;raws/**/*.md&#39;</span><span class="p">)</span>
+        <span class="c1">// tap into the stream to get each file&#39;s data</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">through2</span><span class="p">.</span><span class="nx">obj</span><span class="p">(</span><span class="nx">processMdFiles</span><span class="p">))</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">rename</span><span class="p">(</span><span class="nx">newPath</span><span class="p">))</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="s2">&quot;./dist&quot;</span><span class="p">))</span>
+<span class="p">});</span>
+
+<span class="nx">With</span> <span class="k">this</span> <span class="kd">function</span> <span class="nx">handling</span> <span class="nx">the</span> <span class="nx">rename</span> <span class="nx">details</span><span class="o">:</span>
+</pre></div>
+
+</code></pre><p>function newPath(pathObj) {
+    pathObj.dirname = path.join(pathObj.dirname, pathObj.basename)
+    pathObj.basename = &quot;index&quot;;
+    pathObj.extname = &quot;.html&quot;;
+}
+```</p>
+<p>Next up I needed to figure out what I wanted to do about an index. I didn&#39;t know
+much about SEO or blogging in general, but I knew I needed some way for posts to
+get ingested. I also knew I wanted to easily be able to submit a post to twitter,
+fb, hacker news and the like. I also wanted a pretty single page app experience.
+How would I go about getting both? I needed to look at a real world example to
+make sure I was going about this the right way.</p>
+<p>After some thought I decided I would organize posts into numeric txt files in groups of</p>
+<ol>
+<li>I&#39;d have a main template which would get updated with the &quot;latest&quot; group of 10. But
+as you scrolled it would grab the next group of 10 and their associated snippets.</li>
+</ol>
+<p>Things just got more complex. Before I started automating all of this with gulp, I really
+needed to lock down some client code to make sure it was in fact what I wanted. At this point,
+my knee jerk reaction said - hey this is a great time to checkout react. And so I did.</p>
+<h2 id="taking-some-time-to-think-about-the-experience-with-reactjs-">Taking some time to think about the experience with ReactJS.</h2>
+<p>Everything in React is components. Which I like. So now let&#39;s take a moment to think through
+what components this blog will have. My initial thoughts looked like this:</p>
+<ul>
+<li>Main Scroll List of Posts - displays N post summaries at a time and lets us scroll through and load more on scroll end</li>
+<li>Post Summary Card
+<strong> Title
+</strong> Snippet</li>
+<li>Full Post View (this should be a single page)
+<strong> Title
+</strong> Body</li>
+<li>Tweets side bar
+** Tweet</li>
+<li>Instapaper side bar
+** Headline</li>
+</ul>
+<p>That seems pretty easy. For Models, we&#39;ll likely use Backbone and potentially some Browserify
+because I like my js node-like. Quick shout out to (Tyler McGinnis)[<a href="http://tylermcginnis.com/">http://tylermcginnis.com/</a>] who wrote
+(this)[<a href="http://tylermcginnis.com/reactjs-tutorial-a-comprehensive-guide-to-building-apps-with-react/">http://tylermcginnis.com/reactjs-tutorial-a-comprehensive-guide-to-building-apps-with-react/</a>] very
+awesome tutorial on React which I used to accumulate my current (paltry) knowledge. Bear in mind I haven&#39;t
+done anything in the web front-end world in a while so bear with me.</p>

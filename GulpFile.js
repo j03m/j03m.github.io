@@ -16,6 +16,7 @@ gulp.task('build_content', function () {
     return gulp.src('raws/**/*.md')
         // tap into the stream to get each file's data
         .pipe(through2.obj(processMdFiles))
+        .pipe(rename(newPath))
         .pipe(gulp.dest("./dist"))
 });
 
@@ -24,6 +25,12 @@ gulp.task('default', function () {
     gulp.watch('tests/**/*.js', ['test']);
     gulp.watch('raws/**/*.md', ['build_content']);
 });
+
+function newPath(pathObj) {
+    pathObj.dirname = path.join(pathObj.dirname, pathObj.basename)
+    pathObj.basename = "index";
+    pathObj.extname = ".html";
+}
 
 function processMdFiles(chunk, enc, cb){
     var promise = md2post(chunk.contents.toString());
