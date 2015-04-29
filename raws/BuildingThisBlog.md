@@ -37,7 +37,9 @@ We'll have a scrolling lists of posts and click through to view the full post.
 
 So off to the races.
 
-First things first: *Easy markdown to html*
+
+
+## First things first: *Easy markdown to html*
 
 (https://github.com/chjj/marked)[chjj/marked] stood out here
 as my best option for node as the syntax highlighting sample was simple to follow
@@ -166,6 +168,8 @@ though, I found myself saying. You know what - you&#39;ve done so little web stu
 in recent days. Why don&#39;t you take a moment and build it out yourself?</p>
 ```
 
+## Testing
+
 To verify that we don't break things moving forward, let's be good citizens and
 write some tests. For that I like mocha, which we'll add to our deps:
 
@@ -256,6 +260,8 @@ describe('md2post', function(){
         });
     })
 })```
+
+## The bigger picture
 
 Okay, but now I knew I needed a way to manage posts. Some method for organizing
 and indexing them. What we'll do here is follow a simple scheme of title/index.html
@@ -404,6 +410,8 @@ function newPath(pathObj) {
 }
 ```
 
+## The even bigger picture
+
 Next up I needed to figure out what I wanted to do about an index. I didn't know
 much about SEO or blogging in general, but I knew I needed some way for posts to
 get ingested. I also knew I wanted to easily be able to submit a post to twitter,
@@ -442,7 +450,124 @@ because I like my js node-like. Quick shout out to (Tyler McGinnis)[http://tyler
 awesome tutorial on React which I used to accumulate my current (paltry) knowledge. Bear in mind I haven't
 done anything in the web front-end world in a while so bear with me.
 
- 
+## Flexing
+
+I've never really loved css layouts. I don't think anyone ever has. That said, flexbox is finally a css layout
+scheme I can both grok and get behind. So, given the layout above, I came up with the following flexbox layout
+using node sass compiled it down to a template.
+
+```css
+}
+```
+
+With a really basic html skeleton:
+
+```html
+```
+
+## MOAR AUTOMATING OF THE THINGS
+
+This let me see that I had the basic blocks I was looking for. After fiddling
+with this a bit I decided I needed to extend my gulp file to handle some of the
+repetitive tasks I'd been dealing with. As I worked on the sass + html, I found
+myself constantly forgetting to compile + refresh my workspace. So, I decided
+to take care of that and extended my gulp file with a new watch and auto-reload
+express web app and gulp-sass for compilation. This was also a much needed break
+from fiddling with CSS properties. :/
+
+To do this we do some new installs:
+
+```
+npm install express --save-dev
+
+```
+
+Express will be our web framework. We'll write it up as part of our default task
+and have it serve our ./dist directory and also make it a pre-req for our default
+task.
+
+```
+gulp.task('default', ['express'], function () {
+    gulp.watch('lib/**/*.js',['test']);
+    gulp.watch('tests/**/*.js', ['test']);
+    gulp.watch('raws/**/*.md', ['build_content']);
+    gulp.watch('template/**/*.scss', ['compile_sass']);
+    gulp.watch('template/**/*.*', ['reload']);
+});
+
+gulp.task('express', function() {
+    var express = require('express');
+    var app = express();
+    app.use(express.static('./dist'));
+    app.listen(8000);
+});
+```
+
+Now if I navigate to http://localhost:8000/buildingthisblog I see the latest
+transformed post via index.html. Cool. But now I need some more watchers and
+I need the site to auto reload anytime I modify stuff.
+
+For this we'll need livereload and tinylr. Which we can also install:
+
+```
+npm install connect-livereload tiny-lr gulp-livereload --save-dev
+```
+
+We'll add these to our gulpfile:
+```javascript
+var livereload = require('connect-livereload')
+var livereloadport = 35729;
+var lrserver = require('tiny-lr')(),
+```
+
+From there, we can take a ```.pipe(refresh(lrserver));``` whenever we want to
+refresh. I just put it to the test...whoohoo.
+
+## EVEN MOAR AU-TOMATOE-ING!
+
+That solves reload issue but I need it for sass + css. Easy enough. gulp-sass and
+a new task.
+
+
+Install:
+
+```
+npm install --save-dev gulp-sass
+```
+
+Add to gulpfile:
+
+```javascript
+gulp.task('sass', function () {
+    gulp.src('./template/*.scss')
+        .pipe(sass())
+        .pipe(gulp.dest('./dist'))
+        .pipe(refresh(lrserver));
+});
+```
+
+I also have a file called index.html that will *eventually* be our index page
+that I want to move from template to dist, so I'll add that:
+
+```javascript
+gulp.task('cp', function () {
+    gulp.src('./template/*.html')
+        .pipe(gulp.dest('./dist'))
+        .pipe(refresh(lrserver));
+});
+```
+
+And last, we'll need new watchers:
+
+```javascript
+    gulp.watch('template/**/*.scss', ['sass']);
+    gulp.watch('template/**/*.html', ['cp']);
+```
+
+
+
+
+
 
 
 
