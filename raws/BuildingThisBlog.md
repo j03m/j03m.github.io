@@ -399,17 +399,16 @@ gulp.task('build_content', function () {
         .pipe(rename(newPath))
         .pipe(gulp.dest("./dist"))
 });
-
+```
 With this function handling the rename details:
 
-```
+```javascript
 function newPath(pathObj) {
     pathObj.dirname = path.join(pathObj.dirname, pathObj.basename)
     pathObj.basename = "index";
     pathObj.extname = ".html";
 }
 ```
-
 ## The even bigger picture
 
 Next up I needed to figure out what I wanted to do about an index. I didn't know
@@ -457,15 +456,16 @@ scheme I can both grok and get behind. So, given the layout above, I came up wit
 using node sass compiled it down to a template.
 
 ```css
-}
+test
 ```
 
 With a really basic html skeleton:
 
 ```html
+test
 ```
 
-## MOAR AUTOMATING OF THE THINGS
+## Moar au-tomatoe-ating
 
 This let me see that I had the basic blocks I was looking for. After fiddling
 with this a bit I decided I needed to extend my gulp file to handle some of the
@@ -487,7 +487,7 @@ and have it serve our ./dist directory and also make it a pre-req for our defaul
 task.
 
 ```
-gulp.task('default', ['express'], function () {
+gulp.task('default', ['serve'], function () {
     gulp.watch('lib/**/*.js',['test']);
     gulp.watch('tests/**/*.js', ['test']);
     gulp.watch('raws/**/*.md', ['build_content']);
@@ -495,7 +495,7 @@ gulp.task('default', ['express'], function () {
     gulp.watch('template/**/*.*', ['reload']);
 });
 
-gulp.task('express', function() {
+gulp.task('serve', function() {
     var express = require('express');
     var app = express();
     app.use(express.static('./dist'));
@@ -507,68 +507,187 @@ Now if I navigate to http://localhost:8000/buildingthisblog I see the latest
 transformed post via index.html. Cool. But now I need some more watchers and
 I need the site to auto reload anytime I modify stuff.
 
-For this we'll need livereload and tinylr. Which we can also install:
+For this we'll need connect-livereload and tinylr. Which we can also install:
 
 ```
-npm install connect-livereload tiny-lr gulp-livereload --save-dev
+npm install connect-livereload tiny-lr --save-dev
 ```
 
-We'll add these to our gulpfile:
+We'll add these to our gulpfile and modify express to receive connect-livereload
+as middleware:
 ```javascript
-var livereload = require('connect-livereload')
-var livereloadport = 35729;
-var lrserver = require('tiny-lr')(),
-```
+var lrserver = require('tiny-lr')();
 
-From there, we can take a ```.pipe(refresh(lrserver));``` whenever we want to
-refresh. I just put it to the test...whoohoo.
+var EXPRESS_PORT = 8000;
+var EXPRESS_ROOT = './dist';
+var LIVERELOAD_PORT = 35729;
 
-## EVEN MOAR AU-TOMATOE-ING!
-
-That solves reload issue but I need it for sass + css. Easy enough. gulp-sass and
-a new task.
-
-
-Install:
+var app = express();
+app.use(require('connect-livereload')());
+app.use(express.static(EXPRESS_ROOT));
 
 ```
-npm install --save-dev gulp-sass
-```
 
-Add to gulpfile:
+We then modify the serve task:
 
 ```javascript
-gulp.task('sass', function () {
-    gulp.src('./template/*.scss')
-        .pipe(sass())
-        .pipe(gulp.dest('./dist'))
-        .pipe(refresh(lrserver));
+gulp.task('serve', function(){
+    lrserver.listen(LIVERELOAD_PORT);
+    app.listen(EXPRESS_PORT);
 });
 ```
 
-I also have a file called index.html that will *eventually* be our index page
-that I want to move from template to dist, so I'll add that:
+Last, we add a function for refreshing. This will again leverage the through2
+signature:
 
 ```javascript
-gulp.task('cp', function () {
-    gulp.src('./template/*.html')
-        .pipe(gulp.dest('./dist'))
-        .pipe(refresh(lrserver));
-});
+function notifyLivereload(chunk, enc, cb) {
+    lrserver.changed({
+        body: {
+            files: [chunk.path]
+        }
+    });
+    this.push(chunk);
+    cb();
+}
 ```
 
-And last, we'll need new watchers:
-
+Now, where ever we make a change that should refresh the browser, we can add a:
 ```javascript
+     .pipe(through2.obj(notifyLivereload));
+```
+
+We'll add that to some new tasks: sass and cp as well as build_content.
+
+Disclaimer: there is also a
+plugin called gulp-livereload which seems to be set up to do this for us, however
+my first run with proved unsuccessful, so I rolled my own steam processor with
+through2. I may just have missed something.
+
+For sass and cp, I want to create task for handling sass compilation to css and
+ a task that will copy any modified html templates to dist. We also install gulp-sass for
+ handling sass compilation.
+
+ ```javascript
+ gulp.task('sass', function () {
+     gulp.src('./template/*.scss')
+         .pipe(sass())
+         .pipe(gulp.dest(EXPRESS_ROOT))
+         .pipe(through2.obj(notifyLivereload));
+ });
+
+ gulp.task('cp', function () {
+     gulp.src('./template/*.html')
+         .pipe(gulp.dest(EXPRESS_ROOT))
+         .pipe(through2.obj(notifyLivereload));
+ });
+ ```
+
+ And some new watchers:
+
+ ```javascript
     gulp.watch('template/**/*.scss', ['sass']);
     gulp.watch('template/**/*.html', ['cp']);
+
+ ```
+
+## Gulpfile 2.0
+
+Okay, it's been a while and our gulpfile has grown a bit since we last looked.
+Let's get another snapshot before diving back into our adventures with css and
+flexbox and making a beautiful template for a beautiful blog.
+
+```javascript
+ var gulp = require('gulp');
+ var mocha = require('gulp-mocha');
+ var rename = require('gulp-rename');
+ var through2 = require('through2');
+ var md2post = require('./lib/md2post.js');
+ var path = require('path');
+ var express = require('express');
+ var sass = require('gulp-sass');
+ var lrserver = require('tiny-lr')();
+
+ var EXPRESS_PORT = 8000;
+ var EXPRESS_ROOT = './dist';
+ var LIVERELOAD_PORT = 35729;
+
+ var app = express();
+ app.use(require('connect-livereload')());
+ app.use(express.static(EXPRESS_ROOT));
+
+
+ gulp.task('test', function () {
+     return gulp.src('tests/**/*.js', {read: false})
+         .pipe(mocha({reporter: 'nyan'}));
+ });
+
+ gulp.task('build_content', function () {
+     return gulp.src('raws/**/*.md')
+         // tap into the stream to get each file's data
+         .pipe(through2.obj(processMdFiles))
+         .pipe(rename(newPath))
+         .pipe(gulp.dest(EXPRESS_ROOT))
+         .pipe(through2.obj(notifyLivereload));
+ });
+
+ gulp.task('default', ['serve'], function () {
+     gulp.watch('lib/**/*.js',['test']);
+     gulp.watch('tests/**/*.js', ['test']);
+     gulp.watch('raws/**/*.md', ['build_content']);
+     gulp.watch('template/**/*.scss', ['sass']);
+     gulp.watch('template/**/*.html', ['cp']);
+
+ });
+
+ gulp.task('serve', function(){
+     lrserver.listen(LIVERELOAD_PORT);
+     app.listen(EXPRESS_PORT);
+ });
+
+
+ gulp.task('sass', function () {
+     gulp.src('./template/*.scss')
+         .pipe(sass())
+         .pipe(gulp.dest(EXPRESS_ROOT))
+         .pipe(through2.obj(notifyLivereload));
+ });
+
+ gulp.task('cp', function () {
+     gulp.src('./template/*.html')
+         .pipe(gulp.dest(EXPRESS_ROOT))
+         .pipe(through2.obj(notifyLivereload));
+ });
+
+ function newPath(pathObj) {
+     pathObj.dirname = path.join(pathObj.dirname, pathObj.basename);
+     pathObj.basename = "index";
+     pathObj.extname = ".html";
+ }
+
+ function processMdFiles(chunk, enc, cb){
+     var promise = md2post(chunk.contents.toString());
+     promise.then(function(result){
+         chunk.contents = new Buffer(result, "utf-8");
+         this.push(chunk);
+         cb();
+     }.bind(this));
+ }
+
+ function notifyLivereload(chunk, enc, cb) {
+     console.log(chunk.path);
+     lrserver.changed({
+         body: {
+             files: [chunk.path]
+         }
+     });
+     this.push(chunk);
+     cb();
+ }
+
 ```
 
-
-
-
-
-
+## Refining the templates (aka more html and css gah :/ )
 
 
 

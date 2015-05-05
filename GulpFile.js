@@ -27,7 +27,8 @@ gulp.task('build_content', function () {
         // tap into the stream to get each file's data
         .pipe(through2.obj(processMdFiles))
         .pipe(rename(newPath))
-        .pipe(gulp.dest(EXPRESS_ROOT));
+        .pipe(gulp.dest(EXPRESS_ROOT))
+        .pipe(through2.obj(notifyLivereload));
 });
 
 gulp.task('default', ['serve'], function () {
@@ -55,7 +56,7 @@ gulp.task('sass', function () {
 gulp.task('cp', function () {
     gulp.src('./template/*.html')
         .pipe(gulp.dest(EXPRESS_ROOT))
-        .pipe(notifyLivereload);
+        .pipe(through2.obj(notifyLivereload));
 });
 
 function newPath(pathObj) {

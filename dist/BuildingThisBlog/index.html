@@ -356,131 +356,265 @@ build_content task turns into:</p>
         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">rename</span><span class="p">(</span><span class="nx">newPath</span><span class="p">))</span>
         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="s2">&quot;./dist&quot;</span><span class="p">))</span>
 <span class="p">});</span>
-
-<span class="nx">With</span> <span class="k">this</span> <span class="kd">function</span> <span class="nx">handling</span> <span class="nx">the</span> <span class="nx">rename</span> <span class="nx">details</span><span class="o">:</span>
 </pre></div>
 
-</code></pre><p>function newPath(pathObj) {
-    pathObj.dirname = path.join(pathObj.dirname, pathObj.basename)
-    pathObj.basename = &quot;index&quot;;
-    pathObj.extname = &quot;.html&quot;;
-}</p>
-<pre><code><div class="highlight"><pre><span class="err">##</span> <span class="nx">The</span> <span class="nx">even</span> <span class="nx">bigger</span> <span class="nx">picture</span>
-
-<span class="nx">Next</span> <span class="nx">up</span> <span class="nx">I</span> <span class="nx">needed</span> <span class="nx">to</span> <span class="nx">figure</span> <span class="nx">out</span> <span class="nx">what</span> <span class="nx">I</span> <span class="nx">wanted</span> <span class="nx">to</span> <span class="k">do</span> <span class="nx">about</span> <span class="nx">an</span> <span class="nx">index</span><span class="p">.</span> <span class="nx">I</span> <span class="nx">didn</span><span class="s1">&#39;t know</span>
-<span class="s1">much about SEO or blogging in general, but I knew I needed some way for posts to</span>
-<span class="s1">get ingested. I also knew I wanted to easily be able to submit a post to twitter,</span>
-<span class="s1">fb, hacker news and the like. I also wanted a pretty single page app experience.</span>
-<span class="s1">How would I go about getting both? I needed to look at a real world example to</span>
-<span class="s1">make sure I was going about this the right way.</span>
-
-<span class="s1">After some thought I decided I would organize posts into numeric txt files in groups of</span>
-<span class="s1">10. I&#39;</span><span class="nx">d</span> <span class="nx">have</span> <span class="nx">a</span> <span class="nx">main</span> <span class="nx">template</span> <span class="nx">which</span> <span class="nx">would</span> <span class="nx">get</span> <span class="nx">updated</span> <span class="kd">with</span> <span class="nx">the</span> <span class="s2">&quot;latest&quot;</span> <span class="nx">group</span> <span class="nx">of</span> <span class="mi">10</span><span class="p">.</span> <span class="nx">But</span>
-<span class="nx">as</span> <span class="nx">you</span> <span class="nx">scrolled</span> <span class="nx">it</span> <span class="nx">would</span> <span class="nx">grab</span> <span class="nx">the</span> <span class="nx">next</span> <span class="nx">group</span> <span class="nx">of</span> <span class="mi">10</span> <span class="nx">and</span> <span class="nx">their</span> <span class="nx">associated</span> <span class="nx">snippets</span><span class="p">.</span>
-
-<span class="nx">Things</span> <span class="nx">just</span> <span class="nx">got</span> <span class="nx">more</span> <span class="nx">complex</span><span class="p">.</span> <span class="nx">Before</span> <span class="nx">I</span> <span class="nx">started</span> <span class="nx">automating</span> <span class="nx">all</span> <span class="nx">of</span> <span class="k">this</span> <span class="kd">with</span> <span class="nx">gulp</span><span class="p">,</span> <span class="nx">I</span> <span class="nx">really</span>
-<span class="nx">needed</span> <span class="nx">to</span> <span class="nx">lock</span> <span class="nx">down</span> <span class="nx">some</span> <span class="nx">client</span> <span class="nx">code</span> <span class="nx">to</span> <span class="nx">make</span> <span class="nx">sure</span> <span class="nx">it</span> <span class="nx">was</span> <span class="k">in</span> <span class="nx">fact</span> <span class="nx">what</span> <span class="nx">I</span> <span class="nx">wanted</span><span class="p">.</span> <span class="nx">At</span> <span class="k">this</span> <span class="nx">point</span><span class="p">,</span>
-<span class="nx">my</span> <span class="nx">knee</span> <span class="nx">jerk</span> <span class="nx">reaction</span> <span class="nx">said</span> <span class="o">-</span> <span class="nx">hey</span> <span class="k">this</span> <span class="nx">is</span> <span class="nx">a</span> <span class="nx">great</span> <span class="nx">time</span> <span class="nx">to</span> <span class="nx">checkout</span> <span class="nx">react</span><span class="p">.</span> <span class="nx">And</span> <span class="nx">so</span> <span class="nx">I</span> <span class="nx">did</span><span class="p">.</span>
-
-<span class="err">##</span> <span class="nx">Taking</span> <span class="nx">some</span> <span class="nx">time</span> <span class="nx">to</span> <span class="nx">think</span> <span class="nx">about</span> <span class="nx">the</span> <span class="nx">experience</span> <span class="kd">with</span> <span class="nx">ReactJS</span><span class="p">.</span>
-
-<span class="nx">Everything</span> <span class="k">in</span> <span class="nx">React</span> <span class="nx">is</span> <span class="nx">components</span><span class="p">.</span> <span class="nx">Which</span> <span class="nx">I</span> <span class="nx">like</span><span class="p">.</span> <span class="nx">So</span> <span class="nx">now</span> <span class="kd">let</span><span class="s1">&#39;s take a moment to think through</span>
-<span class="s1">what components this blog will have. My initial thoughts looked like this:</span>
-
-<span class="s1">* Main Scroll List of Posts - displays N post summaries at a time and lets us scroll through and load more on scroll end</span>
-<span class="s1">* Post Summary Card</span>
-<span class="s1">** Title</span>
-<span class="s1">** Snippet</span>
-<span class="s1">* Full Post View (this should be a single page)</span>
-<span class="s1">** Title</span>
-<span class="s1">** Body</span>
-<span class="s1">* Tweets side bar</span>
-<span class="s1">** Tweet</span>
-<span class="s1">* Instapaper side bar</span>
-<span class="s1">** Headline</span>
-
-<span class="s1">That seems pretty easy. For Models, we&#39;</span><span class="nx">ll</span> <span class="nx">likely</span> <span class="nx">use</span> <span class="nx">Backbone</span> <span class="nx">and</span> <span class="nx">potentially</span> <span class="nx">some</span> <span class="nx">Browserify</span>
-<span class="nx">because</span> <span class="nx">I</span> <span class="nx">like</span> <span class="nx">my</span> <span class="nx">js</span> <span class="nx">node</span><span class="o">-</span><span class="nx">like</span><span class="p">.</span> <span class="nx">Quick</span> <span class="nx">shout</span> <span class="nx">out</span> <span class="nx">to</span> <span class="p">(</span><span class="nx">Tyler</span> <span class="nx">McGinnis</span><span class="p">)[</span><span class="nx">http</span><span class="o">:</span><span class="c1">//tylermcginnis.com/] who wrote</span>
-<span class="p">(</span><span class="k">this</span><span class="p">)[</span><span class="nx">http</span><span class="o">:</span><span class="c1">//tylermcginnis.com/reactjs-tutorial-a-comprehensive-guide-to-building-apps-with-react/] very</span>
-<span class="nx">awesome</span> <span class="nx">tutorial</span> <span class="nx">on</span> <span class="nx">React</span> <span class="nx">which</span> <span class="nx">I</span> <span class="nx">used</span> <span class="nx">to</span> <span class="nx">accumulate</span> <span class="nx">my</span> <span class="nx">current</span> <span class="p">(</span><span class="nx">paltry</span><span class="p">)</span> <span class="nx">knowledge</span><span class="p">.</span> <span class="nx">Bear</span> <span class="k">in</span> <span class="nx">mind</span> <span class="nx">I</span> <span class="nx">haven</span><span class="s1">&#39;t</span>
-<span class="s1">done anything in the web front-end world in a while so bear with me.</span>
-
-<span class="s1">## Flexing</span>
-
-<span class="s1">I&#39;</span><span class="nx">ve</span> <span class="nx">never</span> <span class="nx">really</span> <span class="nx">loved</span> <span class="nx">css</span> <span class="nx">layouts</span><span class="p">.</span> <span class="nx">I</span> <span class="nx">don</span><span class="err">&#39;</span><span class="nx">t</span> <span class="nx">think</span> <span class="nx">anyone</span> <span class="nx">ever</span> <span class="nx">has</span><span class="p">.</span> <span class="nx">That</span> <span class="nx">said</span><span class="p">,</span> <span class="nx">flexbox</span> <span class="nx">is</span> <span class="k">finally</span> <span class="nx">a</span> <span class="nx">css</span> <span class="nx">layout</span>
-<span class="nx">scheme</span> <span class="nx">I</span> <span class="nx">can</span> <span class="nx">both</span> <span class="nx">grok</span> <span class="nx">and</span> <span class="nx">get</span> <span class="nx">behind</span><span class="p">.</span> <span class="nx">So</span><span class="p">,</span> <span class="nx">given</span> <span class="nx">the</span> <span class="nx">layout</span> <span class="nx">above</span><span class="p">,</span> <span class="nx">I</span> <span class="nx">came</span> <span class="nx">up</span> <span class="kd">with</span> <span class="nx">the</span> <span class="nx">following</span> <span class="nx">flexbox</span> <span class="nx">layout</span>
-<span class="nx">using</span> <span class="nx">node</span> <span class="nx">sass</span> <span class="nx">compiled</span> <span class="nx">it</span> <span class="nx">down</span> <span class="nx">to</span> <span class="nx">a</span> <span class="nx">template</span><span class="p">.</span>
-
-<span class="err">```</span><span class="nx">css</span>
+</code></pre><p>With this function handling the rename details:</p>
+<pre><code class="lang-javascript"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">newPath</span><span class="p">(</span><span class="nx">pathObj</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">pathObj</span><span class="p">.</span><span class="nx">dirname</span> <span class="o">=</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">pathObj</span><span class="p">.</span><span class="nx">dirname</span><span class="p">,</span> <span class="nx">pathObj</span><span class="p">.</span><span class="nx">basename</span><span class="p">)</span>
+    <span class="nx">pathObj</span><span class="p">.</span><span class="nx">basename</span> <span class="o">=</span> <span class="s2">&quot;index&quot;</span><span class="p">;</span>
+    <span class="nx">pathObj</span><span class="p">.</span><span class="nx">extname</span> <span class="o">=</span> <span class="s2">&quot;.html&quot;</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 
-</code></pre><p>With a really basic html skeleton:</p>
-<pre><code class="lang-html"><div class="highlight"><pre>```
+</code></pre>
+<h2 id="the-even-bigger-picture">The even bigger picture</h2>
+<p>Next up I needed to figure out what I wanted to do about an index. I didn&#39;t know
+much about SEO or blogging in general, but I knew I needed some way for posts to
+get ingested. I also knew I wanted to easily be able to submit a post to twitter,
+fb, hacker news and the like. I also wanted a pretty single page app experience.
+How would I go about getting both? I needed to look at a real world example to
+make sure I was going about this the right way.</p>
+<p>After some thought I decided I would organize posts into numeric txt files in groups of</p>
+<ol>
+<li>I&#39;d have a main template which would get updated with the &quot;latest&quot; group of 10. But
+as you scrolled it would grab the next group of 10 and their associated snippets.</li>
+</ol>
+<p>Things just got more complex. Before I started automating all of this with gulp, I really
+needed to lock down some client code to make sure it was in fact what I wanted. At this point,
+my knee jerk reaction said - hey this is a great time to checkout react. And so I did.</p>
+<h2 id="taking-some-time-to-think-about-the-experience-with-reactjs-">Taking some time to think about the experience with ReactJS.</h2>
+<p>Everything in React is components. Which I like. So now let&#39;s take a moment to think through
+what components this blog will have. My initial thoughts looked like this:</p>
+<ul>
+<li>Main Scroll List of Posts - displays N post summaries at a time and lets us scroll through and load more on scroll end</li>
+<li>Post Summary Card
+<strong> Title
+</strong> Snippet</li>
+<li>Full Post View (this should be a single page)
+<strong> Title
+</strong> Body</li>
+<li>Tweets side bar
+** Tweet</li>
+<li>Instapaper side bar
+** Headline</li>
+</ul>
+<p>That seems pretty easy. For Models, we&#39;ll likely use Backbone and potentially some Browserify
+because I like my js node-like. Quick shout out to (Tyler McGinnis)[<a href="http://tylermcginnis.com/">http://tylermcginnis.com/</a>] who wrote
+(this)[<a href="http://tylermcginnis.com/reactjs-tutorial-a-comprehensive-guide-to-building-apps-with-react/">http://tylermcginnis.com/reactjs-tutorial-a-comprehensive-guide-to-building-apps-with-react/</a>] very
+awesome tutorial on React which I used to accumulate my current (paltry) knowledge. Bear in mind I haven&#39;t
+done anything in the web front-end world in a while so bear with me.</p>
+<h2 id="flexing">Flexing</h2>
+<p>I&#39;ve never really loved css layouts. I don&#39;t think anyone ever has. That said, flexbox is finally a css layout
+scheme I can both grok and get behind. So, given the layout above, I came up with the following flexbox layout
+using node sass compiled it down to a template.</p>
+<pre><code class="lang-css"><div class="highlight"><pre><span class="nt">test</span>
+</pre></div>
 
-## MOAR AUTOMATING OF THE THINGS
+</code></pre>
+<p>With a really basic html skeleton:</p>
+<pre><code class="lang-html"><div class="highlight"><pre>test
+</pre></div>
 
-This let me see that I had the basic blocks I was looking for. After fiddling
+</code></pre>
+<h2 id="moar-au-tomatoe-ating">Moar au-tomatoe-ating</h2>
+<p>This let me see that I had the basic blocks I was looking for. After fiddling
 with this a bit I decided I needed to extend my gulp file to handle some of the
 repetitive tasks I&#39;d been dealing with. As I worked on the sass + html, I found
 myself constantly forgetting to compile + refresh my workspace. So, I decided
 to take care of that and extended my gulp file with a new watch and auto-reload
 express web app and gulp-sass for compilation. This was also a much needed break
-from fiddling with CSS properties. :/
+from fiddling with CSS properties. :/</p>
+<p>To do this we do some new installs:</p>
+<pre><code><div class="highlight"><pre><span class="nx">npm</span> <span class="nx">install</span> <span class="nx">express</span> <span class="o">--</span><span class="nx">save</span><span class="o">-</span><span class="nx">dev</span>
+</pre></div>
 
-To do this we do some new installs:
+</code></pre><p>Express will be our web framework. We&#39;ll write it up as part of our default task
+and have it serve our ./dist directory and also make it a pre-req for our default
+task.</p>
+<pre><code><div class="highlight"><pre><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;serve&#39;</span><span class="p">],</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;lib/**/*.js&#39;</span><span class="p">,[</span><span class="s1">&#39;test&#39;</span><span class="p">]);</span>
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;tests/**/*.js&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;test&#39;</span><span class="p">]);</span>
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;raws/**/*.md&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;build_content&#39;</span><span class="p">]);</span>
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;template/**/*.scss&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;compile_sass&#39;</span><span class="p">]);</span>
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;template/**/*.*&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;reload&#39;</span><span class="p">]);</span>
+<span class="p">});</span>
+
+<span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;serve&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+    <span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="kr">static</span><span class="p">(</span><span class="s1">&#39;./dist&#39;</span><span class="p">));</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8000</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</code></pre><p>Now if I navigate to <a href="http://localhost:8000/buildingthisblog">http://localhost:8000/buildingthisblog</a> I see the latest
+transformed post via index.html. Cool. But now I need some more watchers and
+I need the site to auto reload anytime I modify stuff.</p>
+<p>For this we&#39;ll need connect-livereload and tinylr. Which we can also install:</p>
+<pre><code><div class="highlight"><pre><span class="nx">npm</span> <span class="nx">install</span> <span class="nx">connect</span><span class="o">-</span><span class="nx">livereload</span> <span class="nx">tiny</span><span class="o">-</span><span class="nx">lr</span> <span class="o">--</span><span class="nx">save</span><span class="o">-</span><span class="nx">dev</span>
+</pre></div>
+
+</code></pre><p>We&#39;ll add these to our gulpfile and modify express to receive connect-livereload
+as middleware:</p>
+<pre><code class="lang-javascript"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">lrserver</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;tiny-lr&#39;</span><span class="p">)();</span>
+
+<span class="kd">var</span> <span class="nx">EXPRESS_PORT</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">EXPRESS_ROOT</span> <span class="o">=</span> <span class="s1">&#39;./dist&#39;</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">LIVERELOAD_PORT</span> <span class="o">=</span> <span class="mi">35729</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;connect-livereload&#39;</span><span class="p">)());</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="kr">static</span><span class="p">(</span><span class="nx">EXPRESS_ROOT</span><span class="p">));</span>
 </pre></div>
 
 </code></pre>
-<p>npm install express --save-dev</p>
-<pre><code><div class="highlight"><pre><span class="nx">Express</span> <span class="nx">will</span> <span class="nx">be</span> <span class="nx">our</span> <span class="nx">web</span> <span class="nx">framework</span><span class="p">.</span> <span class="nx">We</span><span class="err">&#39;</span><span class="nx">ll</span> <span class="nx">write</span> <span class="nx">it</span> <span class="nx">up</span> <span class="nx">as</span> <span class="nx">part</span> <span class="nx">of</span> <span class="nx">our</span> <span class="k">default</span> <span class="nx">task</span>
-<span class="nx">and</span> <span class="nx">have</span> <span class="nx">it</span> <span class="nx">serve</span> <span class="nx">our</span> <span class="p">.</span><span class="o">/</span><span class="nx">dist</span> <span class="nx">directory</span> <span class="nx">and</span> <span class="nx">also</span> <span class="nx">make</span> <span class="nx">it</span> <span class="nx">a</span> <span class="nx">pre</span><span class="o">-</span><span class="nx">req</span> <span class="k">for</span> <span class="nx">our</span> <span class="k">default</span>
-<span class="nx">task</span><span class="p">.</span>
-</pre></div>
-
-</code></pre><p>gulp.task(&#39;default&#39;, [&#39;express&#39;], function () {
-    gulp.watch(&#39;lib/<strong>/*.js&#39;,[&#39;test&#39;]);
-    gulp.watch(&#39;tests/</strong>/<em>.js&#39;, [&#39;test&#39;]);
-    gulp.watch(&#39;raws/**/</em>.md&#39;, [&#39;build_content&#39;]);
-    gulp.watch(&#39;template/<strong>/*.scss&#39;, [&#39;compile_sass&#39;]);
-    gulp.watch(&#39;template/</strong>/<em>.</em>&#39;, [&#39;reload&#39;]);
-});</p>
-<p>gulp.task(&#39;express&#39;, function() {
-    var express = require(&#39;express&#39;);
-    var app = express();
-    app.use(express.static(&#39;./dist&#39;));
-    app.listen(8000);
-});</p>
-<pre><code><div class="highlight"><pre><span class="nx">Now</span> <span class="k">if</span> <span class="nx">I</span> <span class="nx">navigate</span> <span class="nx">to</span> <span class="nx">http</span><span class="o">:</span><span class="c1">//localhost:8000/buildingthisblog I see the latest</span>
-<span class="nx">transformed</span> <span class="nx">post</span> <span class="nx">via</span> <span class="nx">index</span><span class="p">.</span><span class="nx">html</span><span class="p">.</span> <span class="nx">Cool</span><span class="p">.</span> <span class="nx">But</span> <span class="nx">now</span> <span class="nx">I</span> <span class="nx">need</span> <span class="nx">some</span> <span class="nx">more</span> <span class="nx">watchers</span> <span class="nx">and</span>
-<span class="nx">I</span> <span class="nx">need</span> <span class="nx">the</span> <span class="nx">site</span> <span class="nx">to</span> <span class="nx">auto</span> <span class="nx">reload</span> <span class="nx">anytime</span> <span class="nx">I</span> <span class="nx">modify</span> <span class="nx">stuff</span><span class="p">.</span>
-
-<span class="nx">For</span> <span class="k">this</span> <span class="nx">we</span><span class="err">&#39;</span><span class="nx">ll</span> <span class="nx">need</span> <span class="nx">livereload</span> <span class="nx">and</span> <span class="nx">tinylr</span><span class="p">.</span> <span class="nx">Which</span> <span class="nx">we</span> <span class="nx">can</span> <span class="nx">also</span> <span class="nx">install</span><span class="o">:</span>
-</pre></div>
-
-</code></pre><p>npm install connect-livereload tiny-lr gulp-livereload --save-dev</p>
-<pre><code><div class="highlight"><pre><span class="nx">We</span><span class="s1">&#39;ll add these to our gulpfile:</span>
-<span class="s1">```javascript</span>
-<span class="s1">var livereload = require(&#39;</span><span class="nx">connect</span><span class="o">-</span><span class="nx">livereload</span><span class="s1">&#39;)</span>
-<span class="s1">var livereloadport = 35729;</span>
-<span class="s1">var lrserver = require(&#39;</span><span class="nx">tiny</span><span class="o">-</span><span class="nx">lr</span><span class="err">&#39;</span><span class="p">)(),</span>
-</pre></div>
-
-</code></pre><p>From there, we can take a <code>.pipe(refresh(lrserver));</code> whenever we want to
-refresh. I just put it to the test...whoohoo.</p>
-<h2 id="even-moar-au-tomatoe-ing-">EVEN MOAR AU-TOMATOE-ING!</h2>
-<p>That solves reload issue but I need it for sass + css. Easy enough. gulp-sass and
-a new task.</p>
-<p>Install:</p>
-<pre><code><div class="highlight"><pre><span class="nx">npm</span> <span class="nx">install</span> <span class="o">--</span><span class="nx">save</span><span class="o">-</span><span class="nx">dev</span> <span class="nx">gulp</span><span class="o">-</span><span class="nx">sass</span>
-</pre></div>
-
-</code></pre><p>Add to gulpfile:</p>
-<pre><code class="lang-javascript"><div class="highlight"><pre><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;sass&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-    <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="s1">&#39;./template/*.scss&#39;</span><span class="p">)</span>
-        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">sass</span><span class="p">())</span>
-        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="s1">&#39;./dist&#39;</span><span class="p">));</span>
+<p>We then modify the serve task:</p>
+<pre><code class="lang-javascript"><div class="highlight"><pre><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;serve&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="nx">lrserver</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">LIVERELOAD_PORT</span><span class="p">);</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">EXPRESS_PORT</span><span class="p">);</span>
 <span class="p">});</span>
 </pre></div>
 
 </code></pre>
+<p>Last, we add a function for refreshing. This will again leverage the through2
+signature:</p>
+<pre><code class="lang-javascript"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">notifyLivereload</span><span class="p">(</span><span class="nx">chunk</span><span class="p">,</span> <span class="nx">enc</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">lrserver</span><span class="p">.</span><span class="nx">changed</span><span class="p">({</span>
+        <span class="nx">body</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">files</span><span class="o">:</span> <span class="p">[</span><span class="nx">chunk</span><span class="p">.</span><span class="nx">path</span><span class="p">]</span>
+        <span class="p">}</span>
+    <span class="p">});</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">chunk</span><span class="p">);</span>
+    <span class="nx">cb</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<p>Now, where ever we make a change that should refresh the browser, we can add a:</p>
+<pre><code class="lang-javascript"><div class="highlight"><pre>     <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">through2</span><span class="p">.</span><span class="nx">obj</span><span class="p">(</span><span class="nx">notifyLivereload</span><span class="p">));</span>
+</pre></div>
+
+</code></pre>
+<p>We&#39;ll add that to some new tasks: sass and cp as well as build_content.</p>
+<p>Disclaimer: there is also a
+plugin called gulp-livereload which seems to be set up to do this for us, however
+my first run with proved unsuccessful, so I rolled my own steam processor with
+through2. I may just have missed something.</p>
+<p>For sass and cp, I want to create task for handling sass compilation to css and
+ a task that will copy any modified html templates to dist. We also install gulp-sass for
+ handling sass compilation.</p>
+<pre><code class="lang-javascript"><div class="highlight"><pre> <span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;sass&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+     <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="s1">&#39;./template/*.scss&#39;</span><span class="p">)</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">sass</span><span class="p">())</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="nx">EXPRESS_ROOT</span><span class="p">))</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">through2</span><span class="p">.</span><span class="nx">obj</span><span class="p">(</span><span class="nx">notifyLivereload</span><span class="p">));</span>
+ <span class="p">});</span>
+
+ <span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;cp&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+     <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="s1">&#39;./template/*.html&#39;</span><span class="p">)</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="nx">EXPRESS_ROOT</span><span class="p">))</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">through2</span><span class="p">.</span><span class="nx">obj</span><span class="p">(</span><span class="nx">notifyLivereload</span><span class="p">));</span>
+ <span class="p">});</span>
+</pre></div>
+
+</code></pre>
+<p> And some new watchers:</p>
+<pre><code class="lang-javascript"><div class="highlight"><pre>    <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;template/**/*.scss&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;sass&#39;</span><span class="p">]);</span>
+    <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;template/**/*.html&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;cp&#39;</span><span class="p">]);</span>
+</pre></div>
+
+</code></pre>
+<h2 id="gulpfile-2-0">Gulpfile 2.0</h2>
+<p>Okay, it&#39;s been a while and our gulpfile has grown a bit since we last looked.
+Let&#39;s get another snapshot before diving back into our adventures with css and
+flexbox and making a beautiful template for a beautiful blog.</p>
+<pre><code class="lang-javascript"><div class="highlight"><pre> <span class="kd">var</span> <span class="nx">gulp</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp&#39;</span><span class="p">);</span>
+ <span class="kd">var</span> <span class="nx">mocha</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp-mocha&#39;</span><span class="p">);</span>
+ <span class="kd">var</span> <span class="nx">rename</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp-rename&#39;</span><span class="p">);</span>
+ <span class="kd">var</span> <span class="nx">through2</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;through2&#39;</span><span class="p">);</span>
+ <span class="kd">var</span> <span class="nx">md2post</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./lib/md2post.js&#39;</span><span class="p">);</span>
+ <span class="kd">var</span> <span class="nx">path</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">);</span>
+ <span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+ <span class="kd">var</span> <span class="nx">sass</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp-sass&#39;</span><span class="p">);</span>
+ <span class="kd">var</span> <span class="nx">lrserver</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;tiny-lr&#39;</span><span class="p">)();</span>
+
+ <span class="kd">var</span> <span class="nx">EXPRESS_PORT</span> <span class="o">=</span> <span class="mi">8000</span><span class="p">;</span>
+ <span class="kd">var</span> <span class="nx">EXPRESS_ROOT</span> <span class="o">=</span> <span class="s1">&#39;./dist&#39;</span><span class="p">;</span>
+ <span class="kd">var</span> <span class="nx">LIVERELOAD_PORT</span> <span class="o">=</span> <span class="mi">35729</span><span class="p">;</span>
+
+ <span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+ <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;connect-livereload&#39;</span><span class="p">)());</span>
+ <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="kr">static</span><span class="p">(</span><span class="nx">EXPRESS_ROOT</span><span class="p">));</span>
+
+
+ <span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="s1">&#39;tests/**/*.js&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nx">read</span><span class="o">:</span> <span class="kc">false</span><span class="p">})</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">mocha</span><span class="p">({</span><span class="nx">reporter</span><span class="o">:</span> <span class="s1">&#39;nyan&#39;</span><span class="p">}));</span>
+ <span class="p">});</span>
+
+ <span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;build_content&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="s1">&#39;raws/**/*.md&#39;</span><span class="p">)</span>
+         <span class="c1">// tap into the stream to get each file&#39;s data</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">through2</span><span class="p">.</span><span class="nx">obj</span><span class="p">(</span><span class="nx">processMdFiles</span><span class="p">))</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">rename</span><span class="p">(</span><span class="nx">newPath</span><span class="p">))</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="nx">EXPRESS_ROOT</span><span class="p">))</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">through2</span><span class="p">.</span><span class="nx">obj</span><span class="p">(</span><span class="nx">notifyLivereload</span><span class="p">));</span>
+ <span class="p">});</span>
+
+ <span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;serve&#39;</span><span class="p">],</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+     <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;lib/**/*.js&#39;</span><span class="p">,[</span><span class="s1">&#39;test&#39;</span><span class="p">]);</span>
+     <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;tests/**/*.js&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;test&#39;</span><span class="p">]);</span>
+     <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;raws/**/*.md&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;build_content&#39;</span><span class="p">]);</span>
+     <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;template/**/*.scss&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;sass&#39;</span><span class="p">]);</span>
+     <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;template/**/*.html&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;cp&#39;</span><span class="p">]);</span>
+
+ <span class="p">});</span>
+
+ <span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;serve&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+     <span class="nx">lrserver</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">LIVERELOAD_PORT</span><span class="p">);</span>
+     <span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">EXPRESS_PORT</span><span class="p">);</span>
+ <span class="p">});</span>
+
+
+ <span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;sass&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+     <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="s1">&#39;./template/*.scss&#39;</span><span class="p">)</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">sass</span><span class="p">())</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="nx">EXPRESS_ROOT</span><span class="p">))</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">through2</span><span class="p">.</span><span class="nx">obj</span><span class="p">(</span><span class="nx">notifyLivereload</span><span class="p">));</span>
+ <span class="p">});</span>
+
+ <span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;cp&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+     <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="s1">&#39;./template/*.html&#39;</span><span class="p">)</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="nx">EXPRESS_ROOT</span><span class="p">))</span>
+         <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">through2</span><span class="p">.</span><span class="nx">obj</span><span class="p">(</span><span class="nx">notifyLivereload</span><span class="p">));</span>
+ <span class="p">});</span>
+
+ <span class="kd">function</span> <span class="nx">newPath</span><span class="p">(</span><span class="nx">pathObj</span><span class="p">)</span> <span class="p">{</span>
+     <span class="nx">pathObj</span><span class="p">.</span><span class="nx">dirname</span> <span class="o">=</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">pathObj</span><span class="p">.</span><span class="nx">dirname</span><span class="p">,</span> <span class="nx">pathObj</span><span class="p">.</span><span class="nx">basename</span><span class="p">);</span>
+     <span class="nx">pathObj</span><span class="p">.</span><span class="nx">basename</span> <span class="o">=</span> <span class="s2">&quot;index&quot;</span><span class="p">;</span>
+     <span class="nx">pathObj</span><span class="p">.</span><span class="nx">extname</span> <span class="o">=</span> <span class="s2">&quot;.html&quot;</span><span class="p">;</span>
+ <span class="p">}</span>
+
+ <span class="kd">function</span> <span class="nx">processMdFiles</span><span class="p">(</span><span class="nx">chunk</span><span class="p">,</span> <span class="nx">enc</span><span class="p">,</span> <span class="nx">cb</span><span class="p">){</span>
+     <span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="nx">md2post</span><span class="p">(</span><span class="nx">chunk</span><span class="p">.</span><span class="nx">contents</span><span class="p">.</span><span class="nx">toString</span><span class="p">());</span>
+     <span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">result</span><span class="p">){</span>
+         <span class="nx">chunk</span><span class="p">.</span><span class="nx">contents</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Buffer</span><span class="p">(</span><span class="nx">result</span><span class="p">,</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">);</span>
+         <span class="k">this</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">chunk</span><span class="p">);</span>
+         <span class="nx">cb</span><span class="p">();</span>
+     <span class="p">}.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+ <span class="p">}</span>
+
+ <span class="kd">function</span> <span class="nx">notifyLivereload</span><span class="p">(</span><span class="nx">chunk</span><span class="p">,</span> <span class="nx">enc</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">chunk</span><span class="p">.</span><span class="nx">path</span><span class="p">);</span>
+     <span class="nx">lrserver</span><span class="p">.</span><span class="nx">changed</span><span class="p">({</span>
+         <span class="nx">body</span><span class="o">:</span> <span class="p">{</span>
+             <span class="nx">files</span><span class="o">:</span> <span class="p">[</span><span class="nx">chunk</span><span class="p">.</span><span class="nx">path</span><span class="p">]</span>
+         <span class="p">}</span>
+     <span class="p">});</span>
+     <span class="k">this</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">chunk</span><span class="p">);</span>
+     <span class="nx">cb</span><span class="p">();</span>
+ <span class="p">}</span>
+</pre></div>
+
+</code></pre>
+<h2 id="refining-the-templates-aka-more-html-and-css-gah-">Refining the templates (aka more html and css gah :/ )</h2>
