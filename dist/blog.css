@@ -1,0 +1,110 @@
+.container {
+  display: flex;
+  flex-flow: column;
+  justify-content: space-around; }
+
+.content {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-flow: row wrap;
+  flex-flow: row wrap; }
+
+.content > * {
+  padding: 10px;
+  flex: 1 100%; }
+
+.header {
+  display: flex;
+  flex-flow: row;
+  justify-content: flex-start;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #fafafa;
+  padding: 10px; }
+
+.gravatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 60px;
+  -webkit-border-radius: 60px;
+  -moz-border-radius: 60px;
+  background: url(http://gravatar.com/avatar/a16354f806a5e7cdf68128173ec06ec6) no-repeat;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+  -webkit-box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+  -moz-box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+  margin: 0px 0px 0px 10px; }
+
+.logo {
+  margin: 10px 0px 0px 15px; }
+
+.header h2 {
+  font-size: 25px;
+  line-height: 0.0;
+  letter-spacing: -0.05em;
+  font-family: "clarendon";
+  font-weight: 800;
+  font-style: normal; }
+
+/* Large screens */
+@media all and (min-width: 800px) {
+  .post-list {
+    flex: 4 600px; }
+  .left-stuff, .right-stuff {
+    flex: 1 auto; }
+  .left-stuff {
+    order: 1; }
+  .post-list {
+    order: 2; }
+  .right-stuff {
+    order: 3; }
+  .footer {
+    order: 4; } }
+
+.post-header {
+  margin: 20px 0px 10px 0px; }
+
+.supporting-text {
+  font-size: 16px;
+  font-size: 1rem;
+  font-family: LyonText,Georgia,serif;
+  color: darkgray; }
+
+.post-title {
+  font-family: LyonText,Georgia,serif;
+  font-weight: bold;
+  font-size: 21px;
+  font-size: 1.3125rem;
+  line-height: 30px;
+  line-height: 1.875rem;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap; }
+
+.post-body {
+  margin-bottom: 2px;
+  font-family: LyonText,Georgia,serif;
+  -webkit-transition: all 200ms ease;
+  -moz-transition: all 200ms ease;
+  transition: all 200ms ease;
+  font-size: 16px;
+  font-size: 1rem;
+  line-height: 24px;
+  line-height: 1.5rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: normal; }
+
+.post-footer {
+  font-size: 15px;
+  font-family: "jaf-bernino-sans","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Geneva,Verdana,sans-serif;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: -0.03em;
+  margin: 20px 0px 0px 0px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0; }
