@@ -48131,13 +48131,13 @@ var LeftAside = React.createClass({displayName: "LeftAside",
         return (
             React.createElement("aside", {className: "left-stuff"}, 
                 React.createElement("div", {className: "header"}, 
-                    React.createElement("div", {class: "side-bar"}, 
+                    React.createElement("div", {className: "supporting-text side-bar"}, 
                             React.createElement("h3", null, "Javascript enhanced cyber primate"), 
                             React.createElement("p", null, "by j03m"), 
 
-                            React.createElement("a", {href: "http://twitter.com/j03m", class: "social", target: "_blank"}, React.createElement("i", {class: "fa fa-twitter-square"}), " Twitter"), 
+                            React.createElement("a", {href: "http://twitter.com/j03m", class: "social", target: "_blank"}, React.createElement("i", {className: "fa fa-twitter"}), " Twitter"), 
                             React.createElement("br", null), 
-                            React.createElement("a", {href: "http://github.com/j03m", class: "social", target: "_blank"}, React.createElement("i", {class: "fa fa-github"}), " GitHub")
+                            React.createElement("a", {href: "http://github.com/j03m", class: "social", target: "_blank"}, React.createElement("i", {className: "fa fa-github"}), " GitHub")
 
                     )
                 )
