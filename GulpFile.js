@@ -66,6 +66,7 @@ gulp.task('default', ['serve'], function () {
     gulp.watch(packageJson.paths.mds, ['build_content']);
     gulp.watch(packageJson.paths.sass, ['sass']);
     gulp.watch(packageJson.paths.html, ['cp']);
+    gulp.watch(packageJson.paths.css, ['cp']);
 });
 
 gulp.task('serve', function () {
@@ -115,10 +116,14 @@ gulp.task('cp', ['readInitialIndex'], function (done) {
     var html = gulp.src(packageJson.paths.html)
         .pipe(gulp.dest(packageJson.paths.destinations.dist))
 
+    var css = gulp.src(packageJson.paths.css)
+        .pipe(gulp.dest(packageJson.paths.destinations.dist))
+
+
     var json = gulp.src(packageJson.paths.index)
         .pipe(gulp.dest(packageJson.paths.destinations.dist))
 
-    return merge(html,json).pipe(through2.obj(notifyLivereload))
+    return merge(html,json, css).pipe(through2.obj(notifyLivereload))
 
 });
 

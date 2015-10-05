@@ -19,11 +19,15 @@ function md2post(input) {
         sanitize: true,
         smartLists: true,
         smartypants: false,
-        highlight: function (code, lang, callback) {
-            pbp({lang: lang, format: "html"}, code).then(function (result) {
-                callback(null, result.toString());
-            }); //crash on reject
+        //highlight: function (code, lang, callback) {
+        //    pbp({lang: "js", format: "html"}, code).then(function (result) {
+        //        callback(null, result.toString());
+        //    }); //crash on reject
+        //}
+        highlight: function (code) {
+            return require('highlight.js').highlightAuto(code).value;
         }
+
     });
     return markedP(input);
 }

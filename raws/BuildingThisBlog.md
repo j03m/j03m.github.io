@@ -3,9 +3,8 @@
 I immediately dug the idea of the github.io powered blog. As a publishing system,
 I was initially wooed by Jekyll. About a quarter of the way into the instructions
 though, I found myself saying, "I want to do this from gulp, and I want to just
-own the whole publishing chain and I want to control the UI." I probably could
-have forked Jekyll, but well, there was ruby and I didn't want that. The result
-is an interesting take on publishing done with only the same javascript tools. I would use to do my development.
+own the whole publishing chain." Jekyll also requires ruby last I looked and I
+wanted to have something that was completely driven from node, gulp and git.
 
 The first thing I knew is I wanted to write in my editor of choice using
 Markdown because, well, Markdown is fast, fluent, easy and we all know it well
@@ -20,12 +19,14 @@ a place to drop new client side web tech without much overhead.
 
 I also didn't want to host a backend and I want to push and revise content in git.
 Obviously github.io is the perfect fit, but I wanted to build up a scaffolding
-that let me publish as easily as deploying code. I also wanted to be able to
-save drafts and review them locally before pushing.
+that let me publish as easily as deploying code from git. I also wanted to be able to
+save drafts and review them locally before pushing. All of these things are trivial
+when you consider the object of creation is a piece of code, why not documents as well?
 
 The result, a basic post reading website built with React, Backbone, Browserify and gulp. The gulp file has been extended
 also take into account publishing posts from raw MD files and building a index files to serve as a sort fake backend that
-serves a scrolling list of posts.
+serves a scrolling list of posts. But for the most part, the tech you see inside the gulp file is standard fair
+if you've done any javascript development in the past.
 
 ## Usage
 
@@ -323,9 +324,32 @@ exports.mockAjaxFulfillFn = function(fn){
 Here we fulfill a promise and access data provided from the test via closure at fulfillment time.
 
 
+## Publishing workflow
+
+Getting the contents of dist/ into master for github.io is also pretty straight forward. I call this the "release" stage. After you've published
+to a branch that contains your current revisions, I basically wipe out master, move dist to master and force push it.
+
+```
+git checkout drafts-master
+git branch -D master
+git checkout --orphan master
+git checkout dist drafts-master
+git mv dist/* .
+git add -u .
+git commit -m "Publish"
+git push origin master -f
+```
+
+I guess as a next step wrapping this all up in gulp-git would be ideal in something like a release task.
+
+
 ## Conclusion
 
-In conclusion I feel like this was a great little exercise. For one, the publishing aspect of the gulp file was great way to break out of the way I normally use gulp and write some tasks that weren't standard fair.
+In conclusion I feel like this was a great exercise. For one, the publishing aspect of the gulp file was great way to break out of the
+way I normally use gulp and write some tasks that weren't standard fair. Plus I got a pretty useful tool out of it to boot.
 
-In addition, I was able to prove to myself that avoiding "all in one", "big framework" mentality by piecing together well written portions of other frameworks was pretty straight forward.
+In addition, it was pretty nice to get some disparate pieces of infrastructure working together. Wiring React, Backbone and mocha together I was
+able to prove to myself that avoiding "all in one", "big framework" mentality by piecing together well written
+portions of other frameworks was just as easy as digging through extensive documentation for something expansive.
+
 
