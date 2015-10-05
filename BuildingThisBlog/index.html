@@ -2,9 +2,8 @@
 <p>I immediately dug the idea of the github.io powered blog. As a publishing system,
 I was initially wooed by Jekyll. About a quarter of the way into the instructions
 though, I found myself saying, &quot;I want to do this from gulp, and I want to just
-own the whole publishing chain and I want to control the UI.&quot; I probably could
-have forked Jekyll, but well, there was ruby and I didn&#39;t want that. The result
-is an interesting take on publishing done with only the same javascript tools. I would use to do my development.</p>
+own the whole publishing chain.&quot; Jekyll also requires ruby last I looked and I
+wanted to have something that was completely driven from node, gulp and git.</p>
 <p>The first thing I knew is I wanted to write in my editor of choice using
 Markdown because, well, Markdown is fast, fluent, easy and we all know it well
 from creating github README.mds. I had no interest in web based editors. There
@@ -16,11 +15,13 @@ the site to taste, force me to brush up my CSS skills and generally let me have
 a place to drop new client side web tech without much overhead.</p>
 <p>I also didn&#39;t want to host a backend and I want to push and revise content in git.
 Obviously github.io is the perfect fit, but I wanted to build up a scaffolding
-that let me publish as easily as deploying code. I also wanted to be able to
-save drafts and review them locally before pushing.</p>
+that let me publish as easily as deploying code from git. I also wanted to be able to
+save drafts and review them locally before pushing. All of these things are trivial
+when you consider the object of creation is a piece of code, why not documents as well?</p>
 <p>The result, a basic post reading website built with React, Backbone, Browserify and gulp. The gulp file has been extended
 also take into account publishing posts from raw MD files and building a index files to serve as a sort fake backend that
-serves a scrolling list of posts.</p>
+serves a scrolling list of posts. But for the most part, the tech you see inside the gulp file is standard fair
+if you&#39;ve done any javascript development in the past.</p>
 <h2 id="usage">Usage</h2>
 <p>Using the blog is pretty straight forward. Basically a session goes like this:</p>
 <ul>
@@ -37,260 +38,257 @@ serves a scrolling list of posts.</p>
 <p>I used Browserify because I love the simplicity it provides in allowing me to write nodejs style code. In addition, Browserify lets me easily test the javascript modules I write outside of the browser in Mocha, my test runner of choice. As a matter of practice, I tend to write code that accepts dependencies through the constructor so it is very trivial to write cross platform code and mocking tests by always making sure to  take platform or role specific bits of code via the constructor. We&#39;ll see more on that below.</p>
 <h2 id="views">Views</h2>
 <p>Here is the code from the main content of the site. It&#39;s a fairly straight forward React class powered via JSX:</p>
-<pre><code><div class="highlight"><pre><span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
-<span class="kd">var</span> <span class="nx">React</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;react&quot;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">PostList</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;./post-list-view.js&quot;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">RightAside</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;./right-aside.js&quot;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">LeftAside</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;./left-aside.js&quot;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">Content</span> <span class="o">=</span> <span class="nx">React</span><span class="p">.</span><span class="nx">createClass</span><span class="p">({</span>
-    <span class="nx">render</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">className</span><span class="o">=</span><span class="s2">&quot;content&quot;</span><span class="o">&gt;</span>
-            <span class="o">&lt;</span><span class="nx">PostList</span> <span class="nx">content</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">content</span><span class="p">}</span><span class="o">/&gt;</span>
-            <span class="o">&lt;</span><span class="nx">LeftAside</span><span class="o">/&gt;</span>
-            <span class="o">&lt;</span><span class="nx">RightAside</span><span class="o">/&gt;</span>
-            <span class="o">&lt;</span><span class="err">/div&gt;</span>
-        <span class="p">);</span>
-    <span class="p">},</span>
-    <span class="nx">componentDidUpdate</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
-        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">scrollPosition</span><span class="p">){</span>
-            <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">global</span><span class="p">.</span><span class="nx">scrollTo</span> <span class="o">===</span> <span class="s2">&quot;function&quot;</span><span class="p">){</span>
-                <span class="nx">global</span><span class="p">.</span><span class="nx">scrollTo</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">scrollPosition</span><span class="p">.</span><span class="nx">x</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">scrollPosition</span><span class="p">.</span><span class="nx">y</span><span class="p">);</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">});</span>
-<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">Content</span><span class="p">;</span>
-</pre></div>
-
+<pre><code><span class="hljs-pi">"use strict"</span>;
+<span class="hljs-keyword">var</span> React = <span class="hljs-built_in">require</span>(<span class="hljs-string">"react"</span>);
+<span class="hljs-keyword">var</span> PostList = <span class="hljs-built_in">require</span>(<span class="hljs-string">"./post-list-view.js"</span>);
+<span class="hljs-keyword">var</span> RightAside = <span class="hljs-built_in">require</span>(<span class="hljs-string">"./right-aside.js"</span>);
+<span class="hljs-keyword">var</span> LeftAside = <span class="hljs-built_in">require</span>(<span class="hljs-string">"./left-aside.js"</span>);
+<span class="hljs-keyword">var</span> Content = React.createClass({
+    render: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+        <span class="hljs-keyword">return</span> (
+            <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">"content"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-title">PostList</span> <span class="hljs-attribute">content</span>=<span class="hljs-value">{this.props.content}</span>/&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-title">LeftAside</span>/&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-title">RightAside</span>/&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
+        )</span>;
+    },
+    componentDidUpdate: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.props.scrollPosition){
+            <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> global.scrollTo === <span class="hljs-string">"function"</span>){
+                global.scrollTo(<span class="hljs-keyword">this</span>.props.scrollPosition.x, <span class="hljs-keyword">this</span>.props.scrollPosition.y);
+            }
+        }
+    }
+});
+<span class="hljs-built_in">module</span>.exports = Content;
 </code></pre><p>The post list component houses the main scrolling list of posts. We can see that like any good react app (or any good app in general) the view is completely uncoupled from any knowledge of what is providing data. In a moment, we&#39;ll see this class is going to be fed from Backbone, but it has no knowledge of Backbone what so ever. If we want to swap out Backbone later, we can.</p>
-<pre><code class="lang-javascript"><div class="highlight"><pre><span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
-<span class="kd">var</span> <span class="nx">React</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;react&quot;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">PostSummary</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;./post-summary-view&quot;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">PostFull</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;./post-full-view&quot;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">PostList</span> <span class="o">=</span> <span class="nx">React</span><span class="p">.</span><span class="nx">createClass</span><span class="p">({</span>
-    <span class="nx">getInitialState</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
-        <span class="k">return</span> <span class="p">{</span><span class="nx">showPost</span><span class="o">:</span> <span class="kc">false</span><span class="p">};</span>
-    <span class="p">},</span>
-    <span class="nx">render</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
-        <span class="kd">var</span> <span class="nx">posts</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">content</span><span class="p">.</span><span class="nx">isPost</span><span class="p">){</span>
-            <span class="nx">posts</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">content</span><span class="p">.</span><span class="nx">models</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">item</span><span class="p">){</span>
-                <span class="k">return</span> <span class="o">&lt;</span><span class="nx">PostSummary</span> <span class="nx">postdata</span><span class="o">=</span><span class="p">{</span><span class="nx">item</span><span class="p">.</span><span class="nx">attributes</span><span class="p">}</span> <span class="o">/&gt;</span><span class="p">;</span>
-            <span class="p">});</span>
-        <span class="p">}</span><span class="k">else</span><span class="p">{</span>
-            <span class="k">return</span> <span class="o">&lt;</span><span class="nx">PostFull</span> <span class="nx">postdata</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">content</span><span class="p">.</span><span class="nx">post</span><span class="p">}</span> <span class="o">/&gt;</span><span class="p">;</span>
-        <span class="p">}</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">className</span><span class="o">=</span><span class="s2">&quot;post-list&quot;</span><span class="o">&gt;</span>
-                <span class="p">{</span><span class="nx">posts</span><span class="p">}</span>
-            <span class="o">&lt;</span><span class="err">/div&gt;</span>
-        <span class="p">);</span>
-    <span class="p">},</span>
-    <span class="nx">closePost</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
-        <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">getInitialState</span><span class="p">();</span>
-    <span class="p">}</span>
-<span class="p">});</span>
+<pre><code class="lang-javascript"><span class="hljs-pi">"use strict"</span>;
+<span class="hljs-keyword">var</span> React = <span class="hljs-built_in">require</span>(<span class="hljs-string">"react"</span>);
+<span class="hljs-keyword">var</span> PostSummary = <span class="hljs-built_in">require</span>(<span class="hljs-string">"./post-summary-view"</span>);
+<span class="hljs-keyword">var</span> PostFull = <span class="hljs-built_in">require</span>(<span class="hljs-string">"./post-full-view"</span>);
+<span class="hljs-keyword">var</span> PostList = React.createClass({
+    getInitialState: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+        <span class="hljs-keyword">return</span> {showPost: <span class="hljs-literal">false</span>};
+    },
+    render: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+        <span class="hljs-keyword">var</span> posts = <span class="hljs-string">""</span>;
+        <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.props.content.isPost){
+            posts = <span class="hljs-keyword">this</span>.props.content.models.map(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">item</span>)</span>{
+                <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">PostSummary</span> <span class="hljs-attribute">postdata</span>=<span class="hljs-value">{item.attributes}</span> /&gt;</span>;</span>
+            });
+        }<span class="hljs-keyword">else</span>{
+            <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">PostFull</span> <span class="hljs-attribute">postdata</span>=<span class="hljs-value">{this.props.content.post}</span> /&gt;</span>;</span>
+        }
+        <span class="hljs-keyword">return</span> (
+            <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">"post-list"</span>&gt;</span>
+                {posts}
+            <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
+        )</span>;
+    },
+    closePost: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.getInitialState();
+    }
+});
 
 
-<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">PostList</span><span class="p">;</span>
-</pre></div>
-
+<span class="hljs-built_in">module</span>.exports = PostList;
 </code></pre>
 <h2 id="models">Models</h2>
 <p>Our models are powered by Backbone. Backbone allowed me to easily grab the static Json files that are generated by gulp publish and page through them as if they were a RESTful API. This required minimal code:</p>
-<pre><code class="lang-javascript"><div class="highlight"><pre><span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
-<span class="kd">var</span> <span class="nx">Backbone</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;backbone&quot;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">PostModel</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;./post-model&quot;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">_</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;lodash&quot;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">PostListCollection</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Collection</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
-    <span class="nx">model</span><span class="o">:</span> <span class="nx">PostModel</span><span class="p">,</span>
-    <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">pages</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nx">_</span><span class="p">.</span><span class="nx">bindAll</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s2">&quot;parse&quot;</span><span class="p">,</span> <span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="s2">&quot;more&quot;</span><span class="p">);</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">page</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">nextPage</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">pages</span> <span class="o">=</span> <span class="nx">pages</span><span class="p">;</span>
-    <span class="p">},</span>
-    <span class="nx">fetch</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nx">options</span> <span class="o">=</span> <span class="k">typeof</span> <span class="nx">options</span> <span class="o">!==</span> <span class="s2">&quot;undefined&quot;</span> <span class="o">?</span> <span class="nx">options</span> <span class="o">:</span> <span class="p">{};</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s2">&quot;fetching&quot;</span><span class="p">);</span>
-        <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
-        <span class="kd">var</span> <span class="nx">success</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">success</span><span class="p">;</span>
-        <span class="nx">options</span><span class="p">.</span><span class="nx">remove</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
-        <span class="nx">options</span><span class="p">.</span><span class="nx">add</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-        <span class="nx">options</span><span class="p">.</span><span class="nx">success</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">resp</span><span class="p">)</span> <span class="p">{</span>
-            <span class="nx">self</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s2">&quot;fetched&quot;</span><span class="p">);</span>
-            <span class="k">this</span><span class="p">.</span><span class="nx">page</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">nextPage</span><span class="p">;</span>
-            <span class="k">if</span><span class="p">(</span><span class="nx">success</span><span class="p">)</span> <span class="p">{</span> <span class="nx">success</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">resp</span><span class="p">);</span> <span class="p">}</span>
-        <span class="p">}.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
-        <span class="k">return</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Collection</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">fetch</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
-    <span class="p">},</span>
-    <span class="nx">parse</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">resp</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nx">resp</span><span class="p">;</span> <span class="c1">//array of models</span>
-    <span class="p">},</span>
-    <span class="nx">url</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="s2">&quot;page.&quot;</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">nextPage</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span><span class="p">;</span>
-    <span class="p">},</span>
-    <span class="nx">more</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">nextPage</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">page</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
-        <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">fetch</span><span class="p">();</span>
-    <span class="p">}</span>
-<span class="p">});</span>
+<pre><code class="lang-javascript"><span class="hljs-pi">"use strict"</span>;
+<span class="hljs-keyword">var</span> Backbone = <span class="hljs-built_in">require</span>(<span class="hljs-string">"backbone"</span>);
+<span class="hljs-keyword">var</span> PostModel = <span class="hljs-built_in">require</span>(<span class="hljs-string">"./post-model"</span>);
+<span class="hljs-keyword">var</span> _ = <span class="hljs-built_in">require</span>(<span class="hljs-string">"lodash"</span>);
+<span class="hljs-keyword">var</span> PostListCollection = Backbone.Collection.extend({
+    model: PostModel,
+    initialize: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">pages</span>) </span>{
+        _.bindAll(<span class="hljs-keyword">this</span>, <span class="hljs-string">"parse"</span>, <span class="hljs-string">"url"</span>, <span class="hljs-string">"more"</span>);
+        <span class="hljs-keyword">this</span>.page = <span class="hljs-number">1</span>;
+        <span class="hljs-keyword">this</span>.nextPage = <span class="hljs-number">1</span>;
+        <span class="hljs-keyword">this</span>.pages = pages;
+    },
+    fetch: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">options</span>) </span>{
+        options = <span class="hljs-keyword">typeof</span> options !== <span class="hljs-string">"undefined"</span> ? options : {};
+        <span class="hljs-keyword">this</span>.trigger(<span class="hljs-string">"fetching"</span>);
+        <span class="hljs-keyword">var</span> self = <span class="hljs-keyword">this</span>;
+        <span class="hljs-keyword">var</span> success = options.success;
+        options.remove = <span class="hljs-literal">false</span>;
+        options.add = <span class="hljs-literal">true</span>;
+        options.success = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resp</span>) </span>{
+            self.trigger(<span class="hljs-string">"fetched"</span>);
+            <span class="hljs-keyword">this</span>.page = <span class="hljs-keyword">this</span>.nextPage;
+            <span class="hljs-keyword">if</span>(success) { success(self, resp); }
+        }.bind(<span class="hljs-keyword">this</span>);
+        <span class="hljs-keyword">return</span> Backbone.Collection.prototype.fetch.call(<span class="hljs-keyword">this</span>, options);
+    },
+    parse: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resp</span>) </span>{
+        <span class="hljs-keyword">return</span> resp; <span class="hljs-comment">//array of models</span>
+    },
+    url: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"page."</span> + <span class="hljs-keyword">this</span>.nextPage + <span class="hljs-string">".json"</span>;
+    },
+    more: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">this</span>.nextPage = <span class="hljs-keyword">this</span>.page + <span class="hljs-number">1</span>;
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.fetch();
+    }
+});
 
-<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">PostListCollection</span><span class="p">;</span>
-</pre></div>
-
+<span class="hljs-built_in">module</span>.exports = PostListCollection;
 </code></pre>
 <h2 id="routes">Routes</h2>
 <p>I also took advantage of Backbone&#39;s routes which are still my favorite way to control the over all flow of an application. I realize there were react focused solutions like React Router, but I really wanted to maintain the ability to choose &quot;the right&quot; tech for the right job and not use React focused tech for the sake of using React. Backbone is really great at Models + Routes, so it was logical to use it for this part of the application.</p>
-<pre><code class="lang-javascript"><div class="highlight"><pre><span class="c1">////set up the Backbone router</span>
-<span class="kd">var</span> <span class="nx">Router</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Router</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
-    <span class="nx">routes</span><span class="o">:</span> <span class="p">{</span>
-        <span class="s2">&quot;post/:title&quot;</span><span class="o">:</span> <span class="s2">&quot;showPost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;*action&quot;</span><span class="o">:</span> <span class="s2">&quot;defaultRoute&quot;</span>
-    <span class="p">}</span>
-<span class="p">});</span>
+<pre><code class="lang-javascript"><span class="hljs-comment">////set up the Backbone router</span>
+<span class="hljs-keyword">var</span> Router = Backbone.Router.extend({
+    routes: {
+        <span class="hljs-string">"post/:title"</span>: <span class="hljs-string">"showPost"</span>,
+        <span class="hljs-string">"*action"</span>: <span class="hljs-string">"defaultRoute"</span>
+    }
+});
 
-<span class="kd">var</span> <span class="nx">appRouter</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Router</span><span class="p">();</span>
+<span class="hljs-keyword">var</span> appRouter = <span class="hljs-keyword">new</span> Router();
 
-<span class="nx">appRouter</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;route:defaultRoute&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nx">postListController</span><span class="p">.</span><span class="nx">fetched</span><span class="p">){</span>
-        <span class="nx">postListController</span><span class="p">.</span><span class="nx">showList</span><span class="p">();</span>
-    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
-        <span class="nx">postListController</span><span class="p">.</span><span class="nx">fetch</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
-            <span class="nx">postListController</span><span class="p">.</span><span class="nx">showList</span><span class="p">();</span>
-        <span class="p">});</span>
-    <span class="p">}</span>
+appRouter.on(<span class="hljs-string">"route:defaultRoute"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-keyword">if</span> (postListController.fetched){
+        postListController.showList();
+    }<span class="hljs-keyword">else</span>{
+        postListController.fetch().then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span></span>{
+            postListController.showList();
+        });
+    }
 
-<span class="p">});</span>
+});
 
-<span class="nx">appRouter</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;route:showPost&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">post</span><span class="p">){</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nx">postListController</span><span class="p">.</span><span class="nx">fetched</span><span class="p">){</span>
-        <span class="kd">var</span> <span class="nx">lastScroll</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">x</span><span class="o">:</span> <span class="nx">global</span><span class="p">.</span><span class="nx">scrollX</span><span class="p">,</span> <span class="nx">y</span><span class="o">:</span> <span class="nx">global</span><span class="p">.</span><span class="nx">scrollY</span><span class="p">};</span>
-        <span class="nx">postListController</span><span class="p">.</span><span class="nx">showPost</span><span class="p">(</span><span class="nx">post</span><span class="p">,</span> <span class="nx">lastScroll</span><span class="p">);</span>
-    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
-        <span class="nx">postListController</span><span class="p">.</span><span class="nx">fetch</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
-            <span class="nx">postListController</span><span class="p">.</span><span class="nx">showPost</span><span class="p">(</span><span class="nx">post</span><span class="p">);</span>
-        <span class="p">});</span>
-    <span class="p">}</span>
-<span class="p">});</span>
-</pre></div>
-
+appRouter.on(<span class="hljs-string">"route:showPost"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(post)</span></span>{
+    <span class="hljs-keyword">if</span> (postListController.fetched){
+        <span class="hljs-keyword">var</span> lastScroll = { x: <span class="hljs-keyword">global</span>.scrollX, y: <span class="hljs-keyword">global</span>.scrollY};
+        postListController.showPost(post, lastScroll);
+    }<span class="hljs-keyword">else</span>{
+        postListController.fetch().then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span></span>{
+            postListController.showPost(post);
+        });
+    }
+});
 </code></pre>
 <h2 id="controllers">Controllers</h2>
 <p>As we saw in the routes code, I also wrote some controllers which have two roles. First they are glue between our models + views. Secondly they are the middle layer that builds the composition of the application.</p>
-<pre><code><div class="highlight"><pre><span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
-<span class="kd">var</span> <span class="nx">_</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;lodash&quot;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">$</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;jquery&quot;</span><span class="p">);</span>
-<span class="kd">function</span> <span class="nx">PostListController</span><span class="p">(</span><span class="nx">collection</span><span class="p">,</span> <span class="nx">renderer</span><span class="p">){</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">collection</span> <span class="o">=</span> <span class="nx">collection</span><span class="p">;</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">collection</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;fetched&quot;</span><span class="p">,</span>
-        <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-            <span class="k">this</span><span class="p">.</span><span class="nx">fetched</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-    <span class="p">}.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">renderer</span> <span class="o">=</span> <span class="nx">renderer</span><span class="p">;</span>
-<span class="p">}</span>
+<pre><code><span class="hljs-pi">"use strict"</span>;
+<span class="hljs-keyword">var</span> _ = <span class="hljs-built_in">require</span>(<span class="hljs-string">"lodash"</span>);
+<span class="hljs-keyword">var</span> $ = <span class="hljs-built_in">require</span>(<span class="hljs-string">"jquery"</span>);
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">PostListController</span>(<span class="hljs-params">collection, renderer</span>)</span>{
+    <span class="hljs-keyword">this</span>.collection = collection;
+    <span class="hljs-keyword">this</span>.collection.on(<span class="hljs-string">"fetched"</span>,
+        <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">this</span>.fetched = <span class="hljs-literal">true</span>;
+    }.bind(<span class="hljs-keyword">this</span>));
+    <span class="hljs-keyword">this</span>.renderer = renderer;
+}
 
-<span class="nx">PostListController</span><span class="p">.</span><span class="nx">Modes</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="nx">ShowPostMode</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="nx">ShowListMode</span><span class="o">:</span> <span class="mi">2</span>
-<span class="p">};</span>
+PostListController.Modes = {
+    ShowPostMode: <span class="hljs-number">1</span>,
+    ShowListMode: <span class="hljs-number">2</span>
+};
 
-<span class="nb">Object</span><span class="p">.</span><span class="nx">freeze</span><span class="p">(</span><span class="nx">PostListController</span><span class="p">.</span><span class="nx">Modes</span><span class="p">);</span>
+<span class="hljs-built_in">Object</span>.freeze(PostListController.Modes);
 
-<span class="nx">PostListController</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">fetch</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">collection</span><span class="p">.</span><span class="nx">fetch</span><span class="p">();</span>
-<span class="p">};</span>
+PostListController.prototype.fetch = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.collection.fetch();
+};
 
-<span class="nx">PostListController</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">showList</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">mode</span> <span class="o">=</span> <span class="nx">PostListController</span><span class="p">.</span><span class="nx">Modes</span><span class="p">.</span><span class="nx">ShowListMode</span><span class="p">;</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">renderer</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">collection</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">lastScroll</span><span class="p">);</span>
-<span class="p">};</span>
+PostListController.prototype.showList = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+    <span class="hljs-keyword">this</span>.mode = PostListController.Modes.ShowListMode;
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.renderer.render(<span class="hljs-keyword">this</span>.collection, <span class="hljs-keyword">this</span>.lastScroll);
+};
 
-<span class="nx">PostListController</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">showPost</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">lastScroll</span><span class="p">){</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">lastScroll</span> <span class="o">=</span> <span class="nx">lastScroll</span><span class="p">;</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">mode</span> <span class="o">=</span> <span class="nx">PostListController</span><span class="p">.</span><span class="nx">Modes</span><span class="p">.</span><span class="nx">ShowPostMode</span><span class="p">;</span>
-    <span class="kd">var</span> <span class="nx">stuff</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">pluck</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">collection</span><span class="p">.</span><span class="nx">models</span><span class="p">,</span> <span class="s2">&quot;attributes&quot;</span><span class="p">);</span>
-    <span class="kd">var</span> <span class="nx">post</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">stuff</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nx">item</span><span class="p">.</span><span class="nx">title</span> <span class="o">===</span> <span class="nx">title</span><span class="p">;</span>
-    <span class="p">});</span>
+PostListController.prototype.showPost = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">title, lastScroll</span>)</span>{
+    <span class="hljs-keyword">this</span>.lastScroll = lastScroll;
+    <span class="hljs-keyword">this</span>.mode = PostListController.Modes.ShowPostMode;
+    <span class="hljs-keyword">var</span> stuff = _.pluck(<span class="hljs-keyword">this</span>.collection.models, <span class="hljs-string">"attributes"</span>);
+    <span class="hljs-keyword">var</span> post = _.find(stuff, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">item</span>) </span>{
+        <span class="hljs-keyword">return</span> item.title === title;
+    });
 
-    <span class="k">if</span> <span class="p">(</span><span class="nx">post</span><span class="p">.</span><span class="nx">html</span> <span class="o">===</span> <span class="kc">undefined</span><span class="p">){</span>
-        <span class="c1">//fetch html for this post</span>
-        <span class="nx">$</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">post</span><span class="p">.</span><span class="nx">file</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
-            <span class="nx">post</span><span class="p">.</span><span class="nx">html</span> <span class="o">=</span> <span class="nx">data</span><span class="p">;</span>
-            <span class="k">this</span><span class="p">.</span><span class="nx">renderer</span><span class="p">.</span><span class="nx">render</span><span class="p">({</span><span class="nx">isPost</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">post</span><span class="o">:</span> <span class="nx">post</span><span class="p">});</span>
-        <span class="p">}.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
-    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">renderer</span><span class="p">.</span><span class="nx">render</span><span class="p">({</span><span class="nx">isPost</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">post</span><span class="o">:</span> <span class="nx">post</span><span class="p">});</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="nx">post</span><span class="p">;</span>
-<span class="p">};</span>
+    <span class="hljs-keyword">if</span> (post.html === <span class="hljs-literal">undefined</span>){
+        <span class="hljs-comment">//fetch html for this post</span>
+        $.get(post.file, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>)</span>{
+            post.html = data;
+            <span class="hljs-keyword">this</span>.renderer.render({isPost: <span class="hljs-literal">true</span>, post: post});
+        }.bind(<span class="hljs-keyword">this</span>));
+    }<span class="hljs-keyword">else</span>{
+        <span class="hljs-keyword">this</span>.renderer.render({isPost: <span class="hljs-literal">true</span>, post: post});
+    }
+    <span class="hljs-keyword">return</span> post;
+};
 
-<span class="nx">PostListController</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">more</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">collection</span><span class="p">.</span><span class="nx">more</span><span class="p">();</span>
-<span class="p">};</span>
+PostListController.prototype.more = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.collection.more();
+};
 
-<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">PostListController</span><span class="p">;</span>
-</pre></div>
-
+<span class="hljs-built_in">module</span>.exports = PostListController;
 </code></pre><p>As you can see the controller accepts it&#39;s Backbone model (collection) and it&#39;s view (renderer) via the constructor. By accepting our dependencies via the constuctor, we get easy framework-free dependency injection that can be leveraged to let us test all of this code
 via Mocha, outside the browser.</p>
 <p>For example, in our entry point, we compose everything together:</p>
-<pre><code class="lang-javascript"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">postListCollection</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PostListCollection</span><span class="p">();</span>
-<span class="kd">var</span> <span class="nx">reactRenderer</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ReactRenderer</span><span class="p">();</span>
-<span class="kd">var</span> <span class="nx">postListController</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PostListController</span><span class="p">(</span><span class="nx">postListCollection</span><span class="p">,</span> <span class="nx">reactRenderer</span><span class="p">);</span>
-</pre></div>
-
+<pre><code class="lang-javascript"><span class="hljs-keyword">var</span> postListCollection = <span class="hljs-keyword">new</span> PostListCollection();
+<span class="hljs-keyword">var</span> reactRenderer = <span class="hljs-keyword">new</span> ReactRenderer();
+<span class="hljs-keyword">var</span> postListController = <span class="hljs-keyword">new</span> PostListController(postListCollection, reactRenderer);
 </code></pre>
 <p>This composition and injection allows us to do some neat stuff while testing. For example writing
 headless unit tests with a simple mock of the renderer:</p>
-<pre><code><div class="highlight"><pre><span class="kd">var</span> <span class="nx">MockRenderer</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">didRender</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
-<span class="p">}</span>
+<pre><code><span class="hljs-keyword">var</span> MockRenderer = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+    <span class="hljs-keyword">this</span>.didRender = <span class="hljs-literal">false</span>;
+}
 
-<span class="nx">MockRenderer</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">render</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">didRender</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">renderData</span> <span class="o">=</span> <span class="nx">data</span><span class="p">;</span>
-<span class="p">}</span>
+MockRenderer.prototype.render = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>)</span>{
+    <span class="hljs-keyword">this</span>.didRender = <span class="hljs-literal">true</span>;
+    <span class="hljs-keyword">this</span>.renderData = data;
+}
 
-<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">MockRenderer</span><span class="p">;</span>
-</pre></div>
-
+<span class="hljs-built_in">module</span>.exports = MockRenderer;
 </code></pre><p>Becomes very trivial with code like:</p>
-<pre><code><div class="highlight"><pre><span class="nx">it</span><span class="p">(</span><span class="s2">&quot;should have a collection with models and trigger a render&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">done</span><span class="p">){</span>
-        <span class="kd">var</span> <span class="nx">postListCollection</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PostListCollection</span><span class="p">();</span>
-        <span class="kd">var</span> <span class="nx">pm</span> <span class="o">=</span> <span class="nx">pageMock</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">postListCollection</span><span class="p">);</span>
-        <span class="kd">var</span> <span class="nx">renderer</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Renderer</span><span class="p">();</span>
-        <span class="kd">var</span> <span class="nx">postListController</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PostListController</span><span class="p">(</span><span class="nx">postListCollection</span><span class="p">,</span> <span class="nx">renderer</span><span class="p">);</span>
-        <span class="nx">Backbone</span><span class="p">.</span><span class="nx">ajax</span> <span class="o">=</span> <span class="nx">backBoneMock</span><span class="p">.</span><span class="nx">mockAjaxFulfillFn</span><span class="p">(</span><span class="nx">pm</span><span class="p">);</span>
-        <span class="kd">var</span> <span class="nx">p</span> <span class="o">=</span> <span class="nx">postListController</span><span class="p">.</span><span class="nx">fetch</span><span class="p">();</span>
-        <span class="nx">p</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
-            <span class="c1">//validate the model</span>
-            <span class="nx">assert</span><span class="p">(</span><span class="nx">postListController</span><span class="p">.</span><span class="nx">collection</span><span class="p">.</span><span class="nx">models</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">2</span><span class="p">);</span>
-            <span class="nx">postListController</span><span class="p">.</span><span class="nx">showList</span><span class="p">();</span>
-            <span class="nx">assert</span><span class="p">(</span><span class="nx">renderer</span><span class="p">.</span><span class="nx">didRender</span><span class="p">);</span>
-            <span class="nx">assert</span><span class="p">(</span><span class="nx">renderer</span><span class="p">.</span><span class="nx">renderData</span> <span class="o">===</span> <span class="nx">postListController</span><span class="p">.</span><span class="nx">collection</span><span class="p">);</span>
-            <span class="nx">done</span><span class="p">();</span>
-        <span class="p">});</span>
-    <span class="p">});</span>
-</pre></div>
-
+<pre><code>it<span class="hljs-list">(<span class="hljs-string">"should have a collection with models and trigger a render"</span>, function<span class="hljs-list">(<span class="hljs-keyword">done</span>)</span>{
+        var postListCollection = new PostListCollection<span class="hljs-list">()</span><span class="hljs-comment">;</span>
+        var pm = pageMock.bind<span class="hljs-list">(<span class="hljs-keyword">postListCollection</span>)</span><span class="hljs-comment">;</span>
+        var renderer = new Renderer<span class="hljs-list">()</span><span class="hljs-comment">;</span>
+        var postListController = new PostListController<span class="hljs-list">(<span class="hljs-keyword">postListCollection</span>, renderer)</span><span class="hljs-comment">;</span>
+        Backbone.ajax = backBoneMock.mockAjaxFulfillFn<span class="hljs-list">(<span class="hljs-keyword">pm</span>)</span><span class="hljs-comment">;</span>
+        var p = postListController.fetch<span class="hljs-list">()</span><span class="hljs-comment">;</span>
+        p.then<span class="hljs-list">(<span class="hljs-keyword">function</span><span class="hljs-list">()</span>{
+            //validate the model
+            assert<span class="hljs-list">(<span class="hljs-keyword">postListController</span>.collection.models.length === <span class="hljs-number">2</span>)</span><span class="hljs-comment">;</span>
+            postListController.showList<span class="hljs-list">()</span><span class="hljs-comment">;</span>
+            assert<span class="hljs-list">(<span class="hljs-keyword">renderer</span>.didRender)</span><span class="hljs-comment">;</span>
+            assert<span class="hljs-list">(<span class="hljs-keyword">renderer</span>.renderData === postListController.collection)</span><span class="hljs-comment">;</span>
+            done<span class="hljs-list">()</span><span class="hljs-comment">;</span>
+        })</span><span class="hljs-comment">;</span>
+    })</span><span class="hljs-comment">;</span>
 </code></pre><p>Backbone can also be tricky pain to write non-browser unit tests for. However, because of the way Backbone is written it&#39;s pretty trivial to override the functions that physically dependon on aspects of the browser. I wrote some basic mock classes to deliver
 data I wanted and monkey patched them into Backbone&#39;s ajax function:</p>
-<pre><code><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">mockAjaxFulfillFn</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">fn</span><span class="p">){</span>
-    <span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">,</span><span class="nx">r</span><span class="p">){</span>
-            <span class="k">if</span> <span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">success</span><span class="p">){</span>
-                <span class="nx">options</span><span class="p">.</span><span class="nx">success</span><span class="p">(</span><span class="nx">fn</span><span class="p">());</span>
-            <span class="p">}</span>
-            <span class="nx">f</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
-        <span class="p">});</span>
-    <span class="p">};</span>
-<span class="p">}</span>
-</pre></div>
-
+<pre><code>exports.mockAjaxFulfillFn = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">fn</span>)</span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">options</span>) </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">f,r</span>)</span>{
+            <span class="hljs-keyword">if</span> (options.success){
+                options.success(fn());
+            }
+            f(fn);
+        });
+    };
+}
 </code></pre><p>Here we fulfill a promise and access data provided from the test via closure at fulfillment time.</p>
+<h2 id="publishing-workflow">Publishing workflow</h2>
+<p>Getting the contents of dist/ into master for github.io is also pretty straight forward. I call this the &quot;release&quot; stage. After you&#39;ve published
+to a branch that contains your current revisions, I basically wipe out master, move dist to master and force push it.</p>
+<pre><code>git checkout drafts-master
+git branch -D master
+git checkout --orphan master
+git checkout dist drafts-master
+git mv dist/* .
+git <span class="hljs-keyword">add</span> -u .
+git commit -m <span class="hljs-string">"Publish"</span>
+git <span class="hljs-keyword">push</span> origin master -f
+</code></pre><p>I guess as a next step wrapping this all up in gulp-git would be ideal in something like a release task.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>In conclusion I feel like this was a great little exercise. For one, the publishing aspect of the gulp file was great way to break out of the way I normally use gulp and write some tasks that weren&#39;t standard fair.</p>
-<p>In addition, I was able to prove to myself that avoiding &quot;all in one&quot;, &quot;big framework&quot; mentality by piecing together well written portions of other frameworks was pretty straight forward.</p>
+<p>In conclusion I feel like this was a great exercise. For one, the publishing aspect of the gulp file was great way to break out of the
+way I normally use gulp and write some tasks that weren&#39;t standard fair. Plus I got a pretty useful tool out of it to boot.</p>
+<p>In addition, it was pretty nice to get some disparate pieces of infrastructure working together. Wiring React, Backbone and mocha together I was
+able to prove to myself that avoiding &quot;all in one&quot;, &quot;big framework&quot; mentality by piecing together well written
+portions of other frameworks was just as easy as digging through extensive documentation for something expansive.</p>
