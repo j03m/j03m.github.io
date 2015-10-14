@@ -1,12 +1,10 @@
 #!/usr/bin/env node
 "use strict";
 var marked = require("marked");
-var pb = require("pygmentize-bundled");
 var fs = require("fs");
 var Promise = require("bluebird");
 var fsp = Promise.promisifyAll(fs);
 var markedP = Promise.promisify(marked);
-var pbp = Promise.promisify(pb);
 
 
 function md2post(input) {

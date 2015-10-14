@@ -1,5 +1,7 @@
 # Publishing a Backbone, Browserify and ReactJs Powered Blog to Github.io with Gulp
 
+#####*** UPDATE: Ironically - a few weeks after writing this, I ran across [the medium node cli](https://www.npmjs.com/package/medium-cli) which from a publishing perspective seems like a much nicer way of doing this. I'm going to evaluate it and potentially modifiy it to publish to github.io, but there are also a bunch of benefits to medium, so we'll see.
+
 I immediately dug the idea of the github.io powered blog. As a publishing system,
 I was initially wooed by Jekyll. About a quarter of the way into the instructions
 though, I found myself saying, "I want to do this from gulp, and I want to just
