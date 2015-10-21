@@ -92,7 +92,8 @@ gulp.task('dist2stage', function(){
 
 gulp.task('git-release', function(){
     git.execAsync({args: "checkout master"}).then(function(checkout) {
-        jetpack.move(path.join(packageJson.paths.destinations.temp, "*"), ".");
+        var content = path.join(packageJson.paths.destinations.temp, "/*");
+        jetpack.move(content, "./");
         jetpack.delete(packageJson.paths.destinations.temp);
     });
     //    return git.execAsync({args: "git add -u"});
