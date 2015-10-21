@@ -1,5 +1,4 @@
 <h1 id="publishing-a-backbone-browserify-and-reactjs-powered-blog-to-github-io-with-gulp">Publishing a Backbone, Browserify and ReactJs Powered Blog to Github.io with Gulp</h1>
-<p>#####<em>*</em> UPDATE: Ironically - a few weeks after writing this, I ran across <a href="https://www.npmjs.com/package/medium-cli">the medium node cli</a> which from a publishing perspective seems like a much nicer way of doing this. I&#39;m going to evaluate it and potentially modifiy it to publish to github.io, but there are also a bunch of benefits to medium, so we&#39;ll see.</p>
 <p>I immediately dug the idea of the github.io powered blog. As a publishing system,
 I was initially wooed by Jekyll. About a quarter of the way into the instructions
 though, I found myself saying, &quot;I want to do this from gulp, and I want to just
@@ -278,14 +277,14 @@ data I wanted and monkey patched them into Backbone&#39;s ajax function:</p>
 <h2 id="publishing-workflow">Publishing workflow</h2>
 <p>Getting the contents of dist/ into master for github.io is also pretty straight forward. I call this the &quot;release&quot; stage. After you&#39;ve published
 to a branch that contains your current revisions, I basically wipe out master, move dist to master and force push it.</p>
-<pre><code>git checkout drafts-master
-git branch -D master
-git checkout --orphan master
-git checkout dist drafts-master
-git mv dist/* .
-git <span class="hljs-keyword">add</span> -u .
+<pre><code>git checkout drafts-<span class="hljs-keyword">master</span>
+<span class="hljs-title">git</span> branch -D <span class="hljs-keyword">master</span>
+<span class="hljs-title">git</span> checkout --orphan <span class="hljs-keyword">master</span>
+<span class="hljs-title">git</span> checkout dist drafts-<span class="hljs-keyword">master</span>
+<span class="hljs-title">git</span> mv dist/* .
+git add -u .
 git commit -m <span class="hljs-string">"Publish"</span>
-git <span class="hljs-keyword">push</span> origin master -f
+git push origin <span class="hljs-keyword">master</span> <span class="hljs-title">-f</span>
 </code></pre><p>I guess as a next step wrapping this all up in gulp-git would be ideal in something like a release task.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In conclusion I feel like this was a great exercise. For one, the publishing aspect of the gulp file was great way to break out of the
