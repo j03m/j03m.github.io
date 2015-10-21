@@ -23,6 +23,9 @@ var merge = require('merge-stream');
 var eslint = require('gulp-eslint');
 var istanbul = require('gulp-istanbul');
 var runSequence = require('run-sequence');
+var git = require("gulp-git");
+var jetpack = require("fs-jetpack");
+git = Promise.promisifyAll(git);
 
 var POSTS_PER_PAGE = packageJson.config.POSTS_PER_PAGE;
 var EXPRESS_PORT = packageJson.config.EXPRESS_PORT;
@@ -72,6 +75,31 @@ gulp.task('default', ['serve'], function () {
 gulp.task('serve', function () {
     lrserver.listen(LIVERELOAD_PORT);
     app.listen(EXPRESS_PORT);
+});
+
+gulp.task('release', function(){
+    runSequence(
+        'dist2stage',
+        'git-release'
+    );
+});
+
+gulp.task('dist2stage', function(){
+    jetpack.delete(packageJson.paths.destinations.temp);
+    return gulp.src(path.join(packageJson.paths.destinations.dist, "**/*"))
+        .pipe(gulp.dest(packageJson.paths.destinations.temp));
+});
+
+gulp.task('git-release', function(){
+    git.execAsync({args: "checkout master"}).then(function(checkout){
+        jetpack.move(path.join(packageJson.paths.destinations.temp, "*"), ".");
+        jetpack.delete(packageJson.paths.destinations.temp);
+        return git.execAsync({args: "git add -u"});
+    }).then(function(){
+        return git.execAsync({args: "git commit -m content release " + new Date()});
+    }).then(function(){
+        return git.execAsync({args: "git push origin master"});
+    });
 });
 
 
