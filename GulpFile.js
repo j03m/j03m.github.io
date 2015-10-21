@@ -91,15 +91,16 @@ gulp.task('dist2stage', function(){
 });
 
 gulp.task('git-release', function(){
-    git.execAsync({args: "checkout master"}).then(function(checkout){
+    git.execAsync({args: "checkout master"}).then(function(checkout) {
         jetpack.move(path.join(packageJson.paths.destinations.temp, "*"), ".");
         jetpack.delete(packageJson.paths.destinations.temp);
-        return git.execAsync({args: "git add -u"});
-    }).then(function(){
-        return git.execAsync({args: "git commit -m content release " + new Date()});
-    }).then(function(){
-        return git.execAsync({args: "git push origin master"});
     });
+    //    return git.execAsync({args: "git add -u"});
+    //}).then(function(){
+    //    return git.execAsync({args: "git commit -m content release " + new Date()});
+    //}).then(function(){
+    //    return git.execAsync({args: "git push origin master"});
+    //});
 });
 
 
