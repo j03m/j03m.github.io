@@ -283,8 +283,14 @@ to a branch that contains your current revisions, I basically wipe out master, m
 <span class="hljs-label">git</span> <span class="hljs-keyword">subtree </span><span class="hljs-keyword">push </span>--prefix dist<span class="hljs-comment">/* origin master</span>
 </code></pre><p>This assumes you don&#39;t have master locally, so if you do just git branch -D master to get rid of it and work soley out of a branch called drafts-master
 or something like that</p>
-<p>I guess as a next step wrapping this all up in gulp-git would be ideal in something like a release task.</p>
-<h2 id="conclusion">Conclusion</h2>
+<p>I automated the 3rd and 4th steps with gulp-git:</p>
+<pre><code>
+gulp.task(<span class="hljs-string">'release'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span></span>{
+    <span class="hljs-keyword">return</span> git.execAsync({args: <span class="hljs-string">"push origin --delete master"</span>}).<span class="hljs-keyword">then</span>(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span></span>{
+        <span class="hljs-keyword">return</span> git.execAsync({args: <span class="hljs-string">"subtree push --prefix dist/* origin master"</span>});
+    });
+});
+</code></pre><h2 id="conclusion">Conclusion</h2>
 <p>In conclusion I feel like this was a great exercise. For one, the publishing aspect of the gulp file was great way to break out of the
 way I normally use gulp and write some tasks that weren&#39;t standard fair. Plus I got a pretty useful tool out of it to boot.</p>
 <p>In addition, it was pretty nice to get some disparate pieces of infrastructure working together. Wiring React, Backbone and mocha together I was
