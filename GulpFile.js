@@ -77,37 +77,20 @@ gulp.task('serve', function () {
     app.listen(EXPRESS_PORT);
 });
 
-//gulp.task('release', function(){
-//    runSequence(
-//        'dist2stage',
-//        'git-checkout-master',
-//        'stage2-content',
-//        'git-final'
-//    );
-//});
-//
-//gulp.task('git-final', function(){
-//    git.execAsync({args: "git add -u"}).then(function(){
-//        return git.execAsync({args: "git commit -m content release " + new Date()});
-//    }).then(function(){
-//        return git.execAsync({args: "git push origin master"});
-//    });
-//});
-//
-//gulp.task('dist2stage', function(){
-//    jetpack.remove(packageJson.paths.destinations.temp);
-//    return gulp.src(path.join(packageJson.paths.destinations.dist, "**/*"))
-//        .pipe(gulp.dest(packageJson.paths.destinations.temp));
-//});
-//
-//gulp.task('git-checkout-master', function(){
-//    return git.execAsync({args: "checkout master"});
-//});
-//
-//gulp.task('stage2-content', function(){
-//   return gulp.src(path.join(packageJson.paths.destinations.temp, "**/*"))
-//        .pipe(gulp.dest("./"));
-//});
+gulp.task('release', function(){
+
+    git.execAsync({args: "git add -u ."}).then(function(){
+        return git.execAsync({args: "git commit -m Content Release " + new Date()});
+    }).then(function(){
+        return git.execAsync({args: "git push origin drafts-master"});
+    }).then(function(){
+        return git.execAsync({args: "git push origin --delete master"});
+    }).then(function(){
+        return git.execAsync({args: "git subtree push --prefix dist/* origin master"});
+    });
+});
+
+
 
 gulp.task('sass', function () {
     gulp.src(packageJson.paths.sass)
