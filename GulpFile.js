@@ -79,14 +79,14 @@ gulp.task('serve', function () {
 
 gulp.task('release', function(){
 
-    git.execAsync({args: "git add -u ."}).then(function(){
-        return git.execAsync({args: "git commit -m Content Release " + new Date()});
+    git.execAsync({args: "add -u ."}).then(function(){
+        return git.execAsync({args: "commit -m \"Content Release\""});
     }).then(function(){
-        return git.execAsync({args: "git push origin drafts-master"});
+        return git.execAsync({args: "push origin drafts-master"});
     }).then(function(){
-        return git.execAsync({args: "git push origin --delete master"});
+        return git.execAsync({args: "push origin --delete master"});
     }).then(function(){
-        return git.execAsync({args: "git subtree push --prefix dist/* origin master"});
+        return git.execAsync({args: "subtree push --prefix dist/* origin master"});
     });
 });
 

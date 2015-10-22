@@ -1,7 +1,7 @@
 [
 	{
 		"file": "BuildingThisBlog/index.html",
-		"date": 1445516302349,
+		"date": 1445516856621,
 		"title": "Publishing a Backbone, Browserify and ReactJs Powered Blog to Github.io with Gulp",
 		"summary": "I immediately dug the idea of the github.io powered blog. As a publishing system,\nI was initially wooed by Jekyll. About a quarter of the way into the instructions\nthough, I found myself saying, \"I want to do this from gulp, and I want to just\nown the whole publishing chain.\" Jekyll also requires ruby last I looked and I\nwanted to have something that was completely driven from node, gulp and git.The first thing I knew is I wanted to write in my editor of choice using\nMarkdown because, well, Markdown is fast, fluent, easy and we all know it well\nfrom creating github README.mds. I had no interest in web based editors. There\nwas nothing they really offered I couldn't do with markdown and markdown in my\nmind was just easier to write."
 	}
