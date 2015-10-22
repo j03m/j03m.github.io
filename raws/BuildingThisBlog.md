@@ -340,7 +340,16 @@ git subtree push --prefix dist/* origin master
 This assumes you don't have master locally, so if you do just git branch -D master to get rid of it and work soley out of a branch called drafts-master
 or something like that
 
-I guess as a next step wrapping this all up in gulp-git would be ideal in something like a release task.
+I automated the 3rd and 4th steps with gulp-git:
+
+```
+
+gulp.task('release', function(){
+    return git.execAsync({args: "push origin --delete master"}).then(function(){
+        return git.execAsync({args: "subtree push --prefix dist/* origin master"});
+    });
+});
+```
 
 
 ## Conclusion

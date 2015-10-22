@@ -78,14 +78,7 @@ gulp.task('serve', function () {
 });
 
 gulp.task('release', function(){
-
-    git.execAsync({args: "add -u ."}).then(function(){
-        return git.execAsync({args: "commit -m \"Content Release\""});
-    }).then(function(){
-        return git.execAsync({args: "push origin drafts-master"});
-    }).then(function(){
-        return git.execAsync({args: "push origin --delete master"});
-    }).then(function(){
+    return git.execAsync({args: "push origin --delete master"}).then(function(){
         return git.execAsync({args: "subtree push --prefix dist/* origin master"});
     });
 });
