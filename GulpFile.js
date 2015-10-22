@@ -95,7 +95,7 @@ gulp.task('git-final', function(){
 });
 
 gulp.task('dist2stage', function(){
-    jetpack.delete(packageJson.paths.destinations.temp);
+    jetpack.remove(packageJson.paths.destinations.temp);
     return gulp.src(path.join(packageJson.paths.destinations.dist, "**/*"))
         .pipe(gulp.dest(packageJson.paths.destinations.temp));
 });
