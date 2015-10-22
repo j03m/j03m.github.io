@@ -330,11 +330,15 @@ Getting the contents of dist/ into master for github.io is also pretty straight 
 to a branch that contains your current revisions, I basically wipe out master, move dist to master and force push it.
 
 ```
-git branch -D master
+git add .
+git commit -m "Content Release <date>"
 git push origin --delete master
 git subtree push --prefix dist/* origin master
 
 ```
+
+This assumes you don't have master locally, so if you do just git branch -D master to get rid of it and work soley out of a branch called drafts-master
+or something like that
 
 I guess as a next step wrapping this all up in gulp-git would be ideal in something like a release task.
 

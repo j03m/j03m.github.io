@@ -277,10 +277,13 @@ data I wanted and monkey patched them into Backbone&#39;s ajax function:</p>
 <h2 id="publishing-workflow">Publishing workflow</h2>
 <p>Getting the contents of dist/ into master for github.io is also pretty straight forward. I call this the &quot;release&quot; stage. After you&#39;ve published
 to a branch that contains your current revisions, I basically wipe out master, move dist to master and force push it.</p>
-<pre><code>git branch -D <span class="hljs-keyword">master</span>
-<span class="hljs-title">git</span> push origin --delete <span class="hljs-keyword">master</span>
-<span class="hljs-title">git</span> subtree push --prefix dist/* origin <span class="hljs-literal">master</span>
-</code></pre><p>I guess as a next step wrapping this all up in gulp-git would be ideal in something like a release task.</p>
+<pre><code><span class="hljs-label">git</span> <span class="hljs-keyword">add </span>.
+<span class="hljs-label">git</span> commit -m <span class="hljs-string">"Content Release &lt;date&gt;"</span>
+<span class="hljs-label">git</span> <span class="hljs-keyword">push </span>origin --delete master
+<span class="hljs-label">git</span> <span class="hljs-keyword">subtree </span><span class="hljs-keyword">push </span>--prefix dist<span class="hljs-comment">/* origin master</span>
+</code></pre><p>This assumes you don&#39;t have master locally, so if you do just git branch -D master to get rid of it and work soley out of a branch called drafts-master
+or something like that</p>
+<p>I guess as a next step wrapping this all up in gulp-git would be ideal in something like a release task.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In conclusion I feel like this was a great exercise. For one, the publishing aspect of the gulp file was great way to break out of the
 way I normally use gulp and write some tasks that weren&#39;t standard fair. Plus I got a pretty useful tool out of it to boot.</p>
